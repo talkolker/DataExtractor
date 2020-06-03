@@ -52,21 +52,21 @@ namespace Processor
 
             request = ParseRequestString(i_RequestBody);
 
-            SSMClient.IntializeSSMParameters();
-            AWSLogger AWSLogger = createAwsLogger(request);
-            LogUtils.LoggerFactory.AddAWSLogger(AWSLogger, LogLevel.Information);
+            //SSMClient.IntializeSSMParameters();
+            //AWSLogger AWSLogger = createAwsLogger(request);
+            //LogUtils.LoggerFactory.AddAWSLogger(AWSLogger, LogLevel.Information);
 
             connectToSF(request);
 
             m_DataProcessor = new DataProcessor(m_FSLClient, request);
-            ILogger logger = LogUtils.CreateLogger("Extract Data");
+            //ILogger logger = LogUtils.CreateLogger("Extract Data");
             Stopwatch watchExtractData = new Stopwatch();
             watchExtractData.Start();
             
             m_DataProcessor.ExtractData();
             
             watchExtractData.Stop();
-            LambdaLogger.Log("Extraction of data took: " + watchExtractData.ElapsedMilliseconds + " ms");
+            LambdaLogger.Log("\nExtraction of data took: " + watchExtractData.ElapsedMilliseconds + " ms\n");
             //logger.LogInformation(i_Context: "Data extraction", i_Message: "Querying AB data time using REST API", i_DurationInSeconds: watch.ElapsedMilliseconds);
             watchExtractData.Reset();
         }
@@ -75,10 +75,15 @@ namespace Processor
         {
             m_FSLClient = new FSLClient(i_Request.IsTest, i_Request.IsManaged, i_Request.OrganizationId);
             
-            SSMParameter clientIdParameter = SSMClient.Instance.GetParameter(SSMLibrary.Constants.FSL_SF_CLIENT_ID_PATH);
-            SSMParameter clientSecretParameter = SSMClient.Instance.GetParameter(SSMLibrary.Constants.FSL_SF_CLIENT_SECRET_PATH);
+            //SSMParameter clientIdParameter = SSMClient.Instance.GetParameter(SSMLibrary.Constants.FSL_SF_CLIENT_ID_PATH);
+            //SSMParameter clientSecretParameter = SSMClient.Instance.GetParameter(SSMLibrary.Constants.FSL_SF_CLIENT_SECRET_PATH);
 
-            m_FSLClient.Login(clientIdParameter.Value, clientSecretParameter.Value, i_Request.RefreshToken, i_Request.CustomSFDCAuthURL);
+            string clientIdParameterStr =
+                "3MVG9ZwZNrVajJ4juw533VQe450s71UT3VfQ.iBqsmmnxcogqAix1IusgXoHYMfR_xCRCWn9Gum5ICBFmeitF";
+            string clientSecretParameterStr = "3591300309848784478";
+            
+            
+            m_FSLClient.Login(clientIdParameterStr, clientSecretParameterStr, i_Request.RefreshToken, i_Request.CustomSFDCAuthURL);
         }
 
         private static AWSLogger createAwsLogger(SFDCScheduleRequest i_Request)
