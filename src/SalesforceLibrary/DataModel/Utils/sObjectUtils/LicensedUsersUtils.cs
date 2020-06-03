@@ -46,7 +46,8 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             m_RelatedRecordIds = new HashSet<string>();
             foreach (string resourceId in m_ABData.STMResourcesIDs)
             {
-                m_RelatedRecordIds.Add(m_ABData.CandidatesById[resourceId].UserId);
+                if(m_ABData.CandidatesById.ContainsKey(resourceId))
+                    m_RelatedRecordIds.Add(m_ABData.CandidatesById[resourceId].UserId);
             }
             
             

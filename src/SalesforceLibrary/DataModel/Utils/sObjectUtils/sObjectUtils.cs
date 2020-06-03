@@ -34,7 +34,7 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
         protected string formatIdList(List<string> i_IdsList)
         {
             if (i_IdsList.Count == 0)
-                return "";
+                return "''";
             
             string formattedList = "";
             foreach (string Id in i_IdsList)
@@ -49,7 +49,7 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
         protected string formatList(List<string> i_List)
         {
             if (i_List.Count == 0)
-                return "";
+                return "''";
             
             string formattedList = "";
             foreach (string Id in i_List)

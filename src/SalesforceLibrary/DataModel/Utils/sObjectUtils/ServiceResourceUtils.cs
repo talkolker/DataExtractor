@@ -93,7 +93,44 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             DeserializedQueryResult deserializedQuery =
                 JsonConvert.DeserializeObject<DeserializedQueryResult>(i_QueryResult);
 
-            i_ABData.CandidatesById = deserializedQuery.records.ToDictionary(candidate => candidate.Id);
+            bool serviceHasSkills = false;
+            Dictionary<string, double?> skillIdToLevel = new Dictionary<string, double?>();
+            foreach (SkillRequirement skillReq in i_ABData.ServiceParent[i_ABData.ServiceToSchedule.ParentRecordId].SkillRequirements)
+            {
+                skillIdToLevel.Add(skillReq.SkillId, skillReq.SkillLevel);
+                serviceHasSkills = true;
+            }
+
+            bool matchSkillLevel = false;
+            if(i_ABData.RulesByDevName.ContainsKey("Match_Skills_Service"))
+            {
+                List<Work_Rule__c> matchSkillsRules = i_ABData.RulesByDevName["Match_Skills_Service"];
+                foreach (Work_Rule__c rule in matchSkillsRules)
+                {
+                    if (rule.Match_Skill_Level__c == true)
+                        matchSkillLevel = true;
+                }
+            }
+            
+            i_ABData.CandidatesById = new Dictionary<string, ServiceResource>();
+            if(!matchSkillLevel || !serviceHasSkills)
+                i_ABData.CandidatesById = deserializedQuery.records.ToDictionary(candidate => candidate.Id);
+            else
+            {
+                foreach (ServiceResource resource in deserializedQuery.records)
+                {
+                    foreach (ServiceResourceSkill skill in resource.serviceResourceSkillsCollection.records)
+                    {
+                        if (skillIdToLevel.ContainsKey(skill.SkillId))
+                        {
+                            if (matchSkillLevel && skill.SkillLevel < skillIdToLevel[skill.SkillId])
+                                continue;
+
+                            i_ABData.CandidatesById.Add(resource.Id, resource);
+                        }
+                    }
+                }
+            }
         }
 
         public override string getQuery(AppointmentBookingRequest i_Request = null,

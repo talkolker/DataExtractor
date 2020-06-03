@@ -9,8 +9,7 @@ namespace SalesforceLibrary.DataModel.Standard
     [JsonObject]
     public partial class ServiceResourceSkill : ResourceTimePhasedSObject
     {
-        [JsonProperty]
-        private string SkillId { get; set; }
+        [JsonProperty] internal string SkillId { get; set; }
 
         [JsonIgnore]
         public Skill Skill { get; set; }

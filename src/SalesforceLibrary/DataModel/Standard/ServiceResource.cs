@@ -58,13 +58,13 @@ namespace SalesforceLibrary.DataModel.Standard
         public List<ResourceCapacity> Capacities { get; }
 
         [JsonProperty("ServiceResourceSkills")]
-        private RelatedObjectCollection<ServiceResourceSkill> serviceResourceSkillsCollection { get; set; }
+        internal RelatedObjectCollection<ServiceResourceSkill> serviceResourceSkillsCollection { get; set; }
 
         [JsonProperty("ShiftServiceResources")]
         private RelatedObjectCollection<Shift> resourceShiftsCollection { get; set; }
 
         [JsonIgnore]
-        public List<ServiceResourceSkill> Skills { get; }
+        public List<ServiceResourceSkill> Skills { get; set; }
 
         [JsonIgnore]
         public List<Shift> Shifts { get; }
