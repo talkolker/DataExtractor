@@ -12,10 +12,9 @@ namespace SalesforceLibrary.DataModel.Standard
         private string RelatedRecordId { get; set; }
 
         [JsonIgnore]
-        public ISkillRequirementParent RelatedRecord { get; set; }
+        public ServiceParent RelatedRecord { get; set; }
 
-        [JsonProperty]
-        private string SkillId { get; set; }
+        [JsonProperty] internal string SkillId { get; set; }
 
         [JsonIgnore]
         public Skill Skill { get; set; }

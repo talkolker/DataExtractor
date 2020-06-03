@@ -20,9 +20,9 @@ namespace SalesforceLibrary.DataModel.Standard
             set { NumericFields["FSL__Scheduling_Priority__c"] = value; }
         }
 
-        [PackageNamespace("FSL")]
-        [JsonProperty]
-        private string VisitingHours__c { get; set; }
+        //[PackageNamespace("FSL")]
+        //[JsonProperty]
+        //internal string VisitingHours__c { get; set; }
 
         [PackageNamespace("FSL")]
         [JsonIgnore]

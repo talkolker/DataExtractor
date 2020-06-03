@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Processor;
 using SalesforceLibrary.DataModel.Abstraction;
 using SalesforceLibrary.DataModel.FSL;
@@ -9,7 +10,7 @@ using SalesforceLibrary.Requests;
 
 namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
 {
-    public class WorkRuleUtils : IObjectUtils
+    public class WorkRuleUtils : sObjectUtils
     {
         private static readonly List<List<string>> m_RulesReqFields;
 
@@ -47,25 +48,36 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             m_RulesReqFields.Add(EnhancedMatchRuleFields);
         }
 
-        public override void Deserialize(string i_QueryResult, AppointmentBookingData i_ABData)
+        public override void Deserialize(string i_QueryResult, AppointmentBookingData i_ABData,
+            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default)
         {
-            //SFABObjects obj = new SFABObjects();
-            //obj.Parse(i_QueryResult, typeof(Work_Rule__c), false);
             //TODO: add support for long responses that has to be pulled with identifier
             DeserializedQueryResult deserializedQuery =
                 JsonConvert.DeserializeObject<DeserializedQueryResult>(i_QueryResult);
 
-            i_ABData.Rules = new Dictionary<string, List<Work_Rule__c>>();
-            //foreach (Work_Rule__c workRule in deserializedQuery.records)
-            //{
-            //    if(i_ABData.Rules[workRule.DeveloperName] == null)
-            //        i_ABData.Rules[workRule.DeveloperName] = new List<Work_Rule__c>(); 
-            //    
-            //    i_ABData.Rules[workRule.DeveloperName].Add(workRule);
-            //}
+            parseAdditionalData(deserializedQuery.records);
+            
+            i_ABData.RulesByDevName = new Dictionary<string, List<Work_Rule__c>>();
+            foreach (Work_Rule__c workRule in deserializedQuery.records)
+            {
+                if(!i_ABData.RulesByDevName.ContainsKey(workRule.DeveloperName))
+                    i_ABData.RulesByDevName[workRule.DeveloperName] = new List<Work_Rule__c>(); 
+                
+                i_ABData.RulesByDevName[workRule.DeveloperName].Add(workRule);
+            }
+        }
+        
+        protected void parseAdditionalData(List<Work_Rule__c> i_DeserializedObjects)
+        {
+            foreach (Work_Rule__c rule in i_DeserializedObjects)
+            {
+                JToken developerName = rule.m_JSONAdditionalData["RecordType"].Last;
+                rule.DeveloperName = developerName.ToObject<string>();
+            }
         }
 
-        public override string getQuery(AppointmentBookingRequest i_Request)
+        public override string getQuery(AppointmentBookingRequest i_Request = null,
+            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default)
         {
             string rulesQuery =
                 "SELECT Maximum_Travel_From_Home__c,Maximum_Travel_From_Home_Type__c,Id,Enable_Overtime__c,Name,Object_Group_Field__c, Resource_Property__c" +

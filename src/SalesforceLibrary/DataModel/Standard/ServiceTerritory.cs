@@ -27,8 +27,7 @@ namespace SalesforceLibrary.DataModel.Standard
             set { NumericFields["Longitude"] = value; }
         }
 
-        [JsonProperty]
-        private string OperatingHoursId { get; set; }
+        [JsonProperty] internal string OperatingHoursId { get; set; }
 
         [JsonIgnore]
         public OperatingHours OperatingHours { get; set; }

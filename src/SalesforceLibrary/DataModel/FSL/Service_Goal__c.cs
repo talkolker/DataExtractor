@@ -30,6 +30,10 @@ namespace SalesforceLibrary.DataModel.FSL
 
         [PackageNamespace("FSL")]
         public string Custom_Logic_Data__c { get; set; }
+        
+        public string DeveloperName { get; set; }
+        
+        public int? Weight__c { get; set; }
 
         public Service_Goal__c() :
             this(null)

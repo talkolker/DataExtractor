@@ -105,11 +105,9 @@ namespace SalesforceLibrary.DataModel.Standard
             }
         }
 
-        [JsonProperty]
-        private string ParentRecordId { get; set; }
+        [JsonProperty] internal string ParentRecordId { get; set; }
 
-        [JsonProperty]
-        private string ParentRecordType { get; set; }
+        [JsonProperty] public string ParentRecordType { get; set; }
 
         [JsonIgnore]
         public IServiceAppoinmentParent ParentRecord { get; set; }
@@ -120,8 +118,7 @@ namespace SalesforceLibrary.DataModel.Standard
 
         public string Note { get; set; }
 
-        [JsonProperty]
-        private string ServiceTerritoryId { get; set; }
+        [JsonProperty] internal string ServiceTerritoryId { get; set; }
 
         [JsonIgnore]
         public ServiceTerritory ServiceTerritory { get; set; }
@@ -140,7 +137,7 @@ namespace SalesforceLibrary.DataModel.Standard
         private RelatedObjectCollection<AssignedResource> assignedResourcesCollection { get; set; }
 
         [JsonIgnore]
-        public List<AssignedResource> ServiceResources { get; }
+        public List<AssignedResource> ServiceResources { get; set; }
 
         //[JsonIgnore]
         //public ServiceResource Resource

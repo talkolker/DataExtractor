@@ -41,7 +41,7 @@ namespace SalesforceLibrary.DataModel.Abstraction
         public PropertyBag<string> StringFields { get; }
 
         [JsonExtensionData(ReadData = true, WriteData = false)]
-        protected IDictionary<string, JToken> m_JSONAdditionalData;
+        public IDictionary<string, JToken> m_JSONAdditionalData;
 
         [JsonIgnore]
         public object TranslatedObject { get; set; }

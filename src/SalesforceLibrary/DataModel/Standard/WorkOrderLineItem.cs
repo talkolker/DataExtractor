@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace SalesforceLibrary.DataModel.Standard
 {
     [JsonObject]
-    public partial class WorkOrderLineItem : sObject, ISkillRequirementParent, IServiceAppoinmentParent
+    public partial class WorkOrderLineItem : ServiceParent, IServiceAppoinmentParent
     {
         public string Description { get; set; }
 
@@ -90,17 +90,14 @@ namespace SalesforceLibrary.DataModel.Standard
         [JsonProperty("SkillRequirements")]
         private RelatedObjectCollection<SkillRequirement> skillRequirementsCollection { get; set; }
 
-        [JsonIgnore]
-        public List<SkillRequirement> SkillRequirements { get; set; }
+        //[JsonIgnore]
+        //public List<SkillRequirement> SkillRequirements { get; set; }
 
         public WorkOrderLineItem(): this(null)
         {
         }
 
-        public WorkOrderLineItem(string i_ObjectId) : base(i_ObjectId)
-        {
-            SkillRequirements = new List<SkillRequirement>();
-        }
+        public WorkOrderLineItem(string i_ObjectId) : base(i_ObjectId) { }
 
         internal override void updateReferencesAfterDeserialize(SFRefereceResolver i_ReferenceResolver, bool i_ShouldAddToRelatedLists = true)
         {

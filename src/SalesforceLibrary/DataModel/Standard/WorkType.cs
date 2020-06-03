@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace SalesforceLibrary.DataModel.Standard
 {
     [JsonObject]
-    public partial class WorkType : sObject, ISkillRequirementParent
+    public partial class WorkType : ServiceParent
     {
         [JsonProperty("ShouldAutoCreateSvcAppt")]
         public bool? ShouldAutoCreateServiceAppointment

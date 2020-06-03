@@ -38,11 +38,16 @@ namespace DataExtractor
 
             //var location = await GetCallingIP();
             string body = "finished";
-            string requestXML = "<AppointmentBookingRequest><RefreshToken>5Aep861i3pidIObecHklRnSH1FnIZsznQb_i3Jo9UC6ey5emPA8bFpnVVfFu5kexGfE0sWAb1qtfPkJLVQsT4Sd</RefreshToken><IsEmergency>false</IsEmergency><ServiceIDs><string>08pe0000000CbHtAAK</string></ServiceIDs><IsTest>true</IsTest><IsManaged>false</IsManaged><UseEdge>true</UseEdge><Start>2020-05-03T00:00:00Z</Start><Finish>2020-05-04T00:00:00Z</Finish><SchedulingPolicyID>a0Qe000000B06dnEAB</SchedulingPolicyID><BreakRecordTypeID>012e000000016xAAAQ</BreakRecordTypeID><IsTravelTriggerEnabled>true</IsTravelTriggerEnabled><SingleTaskMaxRunTimeSeconds>1</SingleTaskMaxRunTimeSeconds><PredictiveTravelEnabled>false</PredictiveTravelEnabled><NumberOfServices>1</NumberOfServices><MaximumNumberOfServicesPer24Hours>50000</MaximumNumberOfServicesPer24Hours><InstanceName>CS15</InstanceName><OrganizationType>Enterprise Edition</OrganizationType><QueueStartTime>2020-04-20T08:56:00.4639112+00:00</QueueStartTime><NumberOfConcurrentRequestsAllowed>2</NumberOfConcurrentRequestsAllowed><RequestIdentifier>jtzzpsT1XkoID69</RequestIdentifier><ErrorObjectKey>jtzzpsT1XkoID69</ErrorObjectKey><OrganizationId>00De0000005T9GFEA0</OrganizationId><AllTasksMode>true</AllTasksMode><Locations><string>0Hhe00000009lyECAQ</string></Locations><RdoResourceId>0Hne0000000CaVCCA0</RdoResourceId><NowAtSchedule>2020-04-20T08:55:57.658Z</NowAtSchedule><longitudeLastKnownLocation>0</longitudeLastKnownLocation><latitudeLastKnownLocation>0</latitudeLastKnownLocation><ClearGantt>false</ClearGantt><MDTBooleanField>IsMultiDay__c</MDTBooleanField></AppointmentBookingRequest>";
+            string requestXML = "<AppointmentBookingRequest><RefreshToken>5Aep861i3pidIObecHklRnSH1FnIZsznQb_i3Jo9UC6ey5emPA8bFpnVVfFu5kexGfE0sWAb1qtfPkJLVQsT4Sd</RefreshToken><IsEmergency>false</IsEmergency><ServiceID>08pe0000000CbHtAAK</ServiceID><IsTest>true</IsTest><IsManaged>false</IsManaged><SchedulingPolicyID>a0Qe000000AzjJNEAZ</SchedulingPolicyID><InstanceName>CS15</InstanceName><OrganizationId>00De0000005T9GFEA0</OrganizationId><OrganizationType>Enterprise Edition</OrganizationType><TravelUnit>km</TravelUnit><SearchSlotsMaxDays>10</SearchSlotsMaxDays><ApprovedAbsences>true</ApprovedAbsences></AppointmentBookingRequest>";
             
             try
             {
+                Stopwatch watchWholeProcess = new Stopwatch();
+                watchWholeProcess.Start();
                 RequestProcessor.ProcessRequest(requestXML);
+                watchWholeProcess.Stop();
+                
+                LambdaLogger.Log("Whole process including login to SF took: " + watchWholeProcess.ElapsedMilliseconds + " ms");
             }
             catch (Exception ex)
             {

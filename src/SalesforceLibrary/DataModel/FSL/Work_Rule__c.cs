@@ -167,7 +167,6 @@ namespace SalesforceLibrary.DataModel.FSL
         [PackageNamespace("FSL")]
         public string Enhanced_Match_Linking_Object__c { get; set; }
         
-        [PackageNamespace("FSL")]
         public string DeveloperName { get; set; }
 
         [JsonIgnore]

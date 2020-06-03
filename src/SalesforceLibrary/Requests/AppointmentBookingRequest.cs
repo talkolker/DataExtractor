@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using SalesforceLibrary.DataModel.Standard;
 
 namespace SalesforceLibrary.Requests
 {
@@ -6,10 +7,13 @@ namespace SalesforceLibrary.Requests
     {
         public string SchedulingPolicyID;
         
-        public string MDTBooleanField;
+        public string TravelUnit;
 
         public string PolicyId => SchedulingPolicyID;
-        public List<string> ServiceIDs { get; set; }
+        public string ServiceID { get; set; }
+        public double SearchSlotsMaxDays { get; set; }
+        
+        public bool ApprovedAbsences { get; set; }
 
         public bool IsEmergency;
     }

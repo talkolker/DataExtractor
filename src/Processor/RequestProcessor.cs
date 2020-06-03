@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using Amazon.Lambda.Core;
 using LoggingLibrary;
 using Microsoft.Extensions.Logging;
 using SalesforceLibrary.Requests;
@@ -59,15 +60,15 @@ namespace Processor
 
             m_DataProcessor = new DataProcessor(m_FSLClient, request);
             ILogger logger = LogUtils.CreateLogger("Extract Data");
-            Stopwatch watch = new Stopwatch();
-            watch.Start();
+            Stopwatch watchExtractData = new Stopwatch();
+            watchExtractData.Start();
             
             m_DataProcessor.ExtractData();
             
-            watch.Stop();
-            
-            logger.LogInformation(i_Context: "Data extraction", i_Message: "Querying AB data time using REST API", i_DurationInSeconds: watch.ElapsedMilliseconds);
-            watch.Reset();
+            watchExtractData.Stop();
+            LambdaLogger.Log("Extraction of data took: " + watchExtractData.ElapsedMilliseconds + " ms");
+            //logger.LogInformation(i_Context: "Data extraction", i_Message: "Querying AB data time using REST API", i_DurationInSeconds: watch.ElapsedMilliseconds);
+            watchExtractData.Reset();
         }
 
         private static void connectToSF(SFDCScheduleRequest i_Request)

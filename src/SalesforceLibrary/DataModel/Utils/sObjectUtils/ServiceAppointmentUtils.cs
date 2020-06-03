@@ -2,14 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Processor;
+using SalesforceLibrary.DataModel.Abstraction;
 using SalesforceLibrary.DataModel.FSL;
 using SalesforceLibrary.DataModel.Standard;
 using SalesforceLibrary.Requests;
 
 namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
 {
-    public class ServiceAppointmentUtils : IObjectUtils
+    public class ServiceAppointmentUtils : sObjectUtils
     {
         private Dictionary<string, List<Work_Rule__c>> m_RulesByDeveloperName;
         private class DeserializedQueryResult
@@ -24,114 +26,184 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
         public ServiceAppointmentUtils(AppointmentBookingData i_ABData)
         {
             m_ServiceReqFieldsByRules = new Dictionary<string, List<string>>();
-            m_RulesByDeveloperName = i_ABData.Rules;
+            m_RulesByDeveloperName = i_ABData.RulesByDevName;
             initializeRequiredFieldsFromRules(i_ABData);
         }
 
         private void initializeRequiredFieldsFromRules(AppointmentBookingData i_ABData)
         {
-            //Time rule required fields
-            List<string> timeRuleRequiredFields = new List<string>();
-            if (i_ABData.Rules.TryGetValue("Time_Rule_Service", out var timeRules))
-            {
-                foreach (Work_Rule__c rule in timeRules)
-                {
-                    timeRuleRequiredFields.AddRange(new List<string>()
-                        {rule.Service_Schedule_Time_Property__c, rule.Service_Time_Property__c});
-                }
-
-                m_ServiceReqFieldsByRules.Add("Time_Rule_Service", timeRuleRequiredFields);
-            }
-
-            //Match rule required fields
-            List<string> matchFieldsRequiredFields = new List<string>();
-            if (i_ABData.Rules.TryGetValue("Match_Fields_Service", out var matchFieldsRules))
-            {
-                foreach (Work_Rule__c rule in matchFieldsRules)
-                {
-                    matchFieldsRequiredFields.Add(rule.Service_Property__c);
-                }
-
-                m_ServiceReqFieldsByRules.Add("Match_Fields_Service", matchFieldsRequiredFields);
-            }
-
-            //Enhanced match rule required fields
-            List<string> enhancedMatchRequiredFields = new List<string>();
-            if (i_ABData.Rules.TryGetValue("Enhanced_Match_Service", out var enhancedMatchRules))
-            {
-                foreach (Work_Rule__c rule in enhancedMatchRules)
-                {
-                    enhancedMatchRequiredFields.Add(rule.Service_Appointment_Matching_Field__c);
-                }
-
-                m_ServiceReqFieldsByRules.Add("Enhanced_Match_Service", enhancedMatchRequiredFields);
-            }
-
-            //Count rule required fields
-            List<string> countRuleRequiredFields = new List<string>();
-            if (i_ABData.Rules.TryGetValue("Count_Rule", out var countRules))
-            {
-                foreach (Work_Rule__c rule in countRules)
-                {
-                    if (rule.CustomFieldName__c != null)
-                        countRuleRequiredFields.Add(rule.CustomFieldName__c);
-                }
-
-                m_ServiceReqFieldsByRules.Add("Count_Rule", countRuleRequiredFields);
-            }
+            List<string> relevanceGroupFields = new List<string>();
             
-            List<string> mdtFields = new List<string>(){i_ABData.LogicSettings.MDT_Boolean_Field__c};
-            //Contractor MDS availability required fields
-            if(i_ABData.Rules.ContainsKey("Contractor_MDS_Availability"))
-                m_ServiceReqFieldsByRules.Add("Contractor_MDS_Availability", mdtFields);
-            
-            //Calendar availability required fields
-            if(i_ABData.Rules.ContainsKey("Calendar_Availability_Service"))
-                m_ServiceReqFieldsByRules.Add("Calendar_Availability_Service", mdtFields);
-            
-            //Availability secondary and shifts required fields
-            if(i_ABData.Rules.ContainsKey("Availability_SecondaryAndShift"))
-                m_ServiceReqFieldsByRules.Add("Availability_SecondaryAndShift", mdtFields);
+            foreach (KeyValuePair<string, List<Work_Rule__c>> ruleByDev in i_ABData.RulesByDevName)
+            {
+                //Time rule required fields
+                if (ruleByDev.Key.Equals("Time_Rule_Service"))
+                {
+                    List<string> timeRuleRequiredFields = new List<string>();
+                    foreach (Work_Rule__c rule in ruleByDev.Value)
+                    {
+                        timeRuleRequiredFields.AddRange(new List<string>()
+                            {rule.Service_Schedule_Time_Property__c, rule.Service_Time_Property__c});
+                        
+                        if(rule.Object_Group_Field__c != null)
+                            relevanceGroupFields.Add(rule.Object_Group_Field__c);
+                    }
+
+                    m_ServiceReqFieldsByRules.Add("Time_Rule_Service", timeRuleRequiredFields);
+                }
+
+                //Match rule required fields
+                else if (ruleByDev.Key.Equals("Match_Fields_Service"))
+                {
+                    List<string> matchFieldsRequiredFields = new List<string>();
+                    foreach (Work_Rule__c rule in ruleByDev.Value)
+                    {
+                        matchFieldsRequiredFields.Add(rule.Service_Property__c);
+                        if(rule.Object_Group_Field__c != null)
+                            relevanceGroupFields.Add(rule.Object_Group_Field__c);
+                    }
+
+                    m_ServiceReqFieldsByRules.Add("Match_Fields_Service", matchFieldsRequiredFields);
+                }
+
+                //Enhanced match rule required fields
+                else if (ruleByDev.Key.Equals("Enhanced_Match_Service"))
+                {
+                    List<string> enhancedMatchRequiredFields = new List<string>();
+                    foreach (Work_Rule__c rule in ruleByDev.Value)
+                    {
+                        enhancedMatchRequiredFields.Add(rule.Service_Appointment_Matching_Field__c);
+                        if(rule.Object_Group_Field__c != null)
+                            relevanceGroupFields.Add(rule.Object_Group_Field__c);
+                    }
+
+                    m_ServiceReqFieldsByRules.Add("Enhanced_Match_Service", enhancedMatchRequiredFields);
+                }
+
+                //Count rule required fields
+                else if (ruleByDev.Key.Equals("Count_Rule"))
+                {
+                    List<string> countRuleRequiredFields = new List<string>();
+                    foreach (Work_Rule__c rule in ruleByDev.Value)
+                    {
+                        if (rule.CustomFieldName__c != null)
+                            countRuleRequiredFields.Add(rule.CustomFieldName__c);
+                        if(rule.Object_Group_Field__c != null)
+                            relevanceGroupFields.Add(rule.Object_Group_Field__c);
+                    }
+
+                    m_ServiceReqFieldsByRules.Add("Count_Rule", countRuleRequiredFields);
+                }
+
+                else
+                {
+                    foreach (Work_Rule__c rule in ruleByDev.Value)
+                    {
+                        if(rule.Object_Group_Field__c != null)
+                            relevanceGroupFields.Add(rule.Object_Group_Field__c);
+                    }
+                }
+            }
+            //For custom field in relevance group
+            m_ServiceReqFieldsByRules.Add("Relevance Group Fields", relevanceGroupFields);
         }
 
-        public override void Deserialize(string i_QueryResult, AppointmentBookingData i_ABData)
+        public override void Deserialize(string i_QueryResult, AppointmentBookingData i_ABData,
+            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default)
         {
             DeserializedQueryResult deserializedQuery =
                 JsonConvert.DeserializeObject<DeserializedQueryResult>(i_QueryResult);
 
-            i_ABData.Services = deserializedQuery.records.ToDictionary(record => record.Id);
+            i_ABData.ServicesById = parseAdditionalData(deserializedQuery.records);
+        }
+        
+        internal Dictionary<string, ServiceAppointment> parseAdditionalData(List<ServiceAppointment> i_DeserializedQueryRecords)
+        {
+            Dictionary<string, ServiceAppointment> services = new Dictionary<string, ServiceAppointment>();
+            foreach (ServiceAppointment service in i_DeserializedQueryRecords)
+            {
+                ServiceTerritory territory = null;
+                OperatingHours opHours = null;
+                List<AssignedResource> resources = null;
+                
+                if (service.m_JSONAdditionalData.TryGetValue("ServiceTerritory", out var territoryToken))
+                {
+                    territory = territoryToken.ToObject<ServiceTerritory>();
+                    if (territory != null)
+                    {
+                        JToken opHoursToken = territory.m_JSONAdditionalData["OperatingHours"];
+                        opHours = opHoursToken.ToObject<OperatingHours>();
+                        territory.Id = service.ServiceTerritoryId;
+                        territory.OperatingHours = opHours;
+                    }
+                }
+
+                if (service.m_JSONAdditionalData.TryGetValue("ServiceResources", out var resourcesToken))
+                {
+                    resources = resourcesToken.ToObject<List<AssignedResource>>();
+                }
+
+                service.ServiceResources = resources;
+                service.ServiceTerritory = territory;
+                services.Add(service.Id, service);
+            }
+            
+            return services;
         }
 
-        public override string getQuery(AppointmentBookingRequest i_Request)
+        public override string getQuery(AppointmentBookingRequest i_Request = null,
+            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default)
         {
-            string serviceIdStr = formatList(i_Request.ServiceIDs);
+            string serviceIdStr = formatIdList(new List<string>(){i_Request.ServiceID});
             string query = "SELECT id,status,related_service__c,same_day__c,same_resource__c,time_dependency__c,appointmentnumber"
                            +",duedate,earlieststarttime,schedstarttime,schedendtime,duration,durationtype,latitude,longitude," +
                            "internalslrgeolocation__latitude__s,internalslrgeolocation__longitude__s,serviceterritoryid," +
                            "schedule_over_lower_priority_appointment__c,use_async_logic__c,mdt_operational_time__c,ismultiday__c" +
-                           ",parentrecordid,serviceterritory.operatinghours.timezone," +
+                           ",parentrecordid, parentrecordtype,serviceterritory.operatinghours.timezone," +
                            "(SELECT estimated_travel_time_to_source__c," +
                            "estimated_travel_time_from_source__c,assignedresourcenumber,serviceresourceid,estimatedtraveltimefrom__c," +
                            "estimatedtraveltime,estimatedtraveldistancefrom__c,estimatedtraveldistanceto__c,serviceresource.servicecrewid," +
                            "serviceresource.resourcetype,serviceresource.iscapacitybased" +
                            " FROM serviceresources ORDER BY serviceresource.resourcetype desc nulls last, createddate asc nulls last)" +
-                           $",(SELECT id FROM service_appointments__r),mds_calculated_length__c {addRRequiredRuleFields()} FROM ServiceAppointment WHERE id in {serviceIdStr}";
+                           ",(SELECT id FROM service_appointments__r),mds_calculated_length__c {0}" +
+                           $" FROM ServiceAppointment WHERE id in ({serviceIdStr})";
 
+            string requiredRuleFields = addRRequiredRuleFields(query);
+            query = string.Format(query, requiredRuleFields);
             return formatQueryString(query);
         }
         
-        private string addRRequiredRuleFields()
+        private string addRRequiredRuleFields(string i_Query)
         {
             string requiredFields ="";
-            //foreach (string developerName in m_RulesByDeveloperName.Keys)
-            //{
-            //    List<string> fieldsPerRule = m_ServiceReqFieldsByRules[developerName];
-            //    string ruleReqFields = string.Join(" , ", fieldsPerRule);
-            //    requiredFields = string.Concat(requiredFields, ruleReqFields + " , ");
-            //}
-//
-            //requiredFields = requiredFields.Remove(requiredFields.Length - 3);
+            foreach (string developerName in m_RulesByDeveloperName.Keys)
+            {
+                if (m_ServiceReqFieldsByRules.TryGetValue(developerName, out var fieldsPerRule))
+                {
+                    foreach (string ruleField in fieldsPerRule.Where(field => !i_Query.Contains(field, StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        requiredFields +=  " , " + ruleField;
+                    }
+                }
+            }
+            
+            if(m_ServiceReqFieldsByRules.TryGetValue("Relevance Group Fields", out var relevanceGroupFields))
+            {
+                requiredFields += ", " + formatList(relevanceGroupFields);
+            }
+
             return requiredFields;
+        }
+
+        public static bool getBooleanField(ServiceAppointment i_Service, string i_FieldName)
+        {
+            bool fieldValue = false;
+            if (i_Service.m_JSONAdditionalData.TryGetValue(i_FieldName, out var value))
+            {
+                fieldValue = value.ToObject<bool>();
+            }
+
+            return fieldValue;
         }
     }
 }

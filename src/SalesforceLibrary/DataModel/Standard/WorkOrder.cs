@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace SalesforceLibrary.DataModel.Standard
 {
     [JsonObject]
-    public partial class WorkOrder : sObject, IServiceAppoinmentParent, IResourcePreferenceParent, ISkillRequirementParent
+    public partial class WorkOrder : ServiceParent, IServiceAppoinmentParent, IResourcePreferenceParent
     {
         public string Description { get; set; }
 
@@ -88,10 +88,10 @@ namespace SalesforceLibrary.DataModel.Standard
         public WorkType WorkType { get; set; }
 
         [JsonProperty("SkillRequirements")]
-        private RelatedObjectCollection<SkillRequirement> skillRequirementsCollection { get; set; }
+        internal RelatedObjectCollection<SkillRequirement> skillRequirementsCollection { get; set; }
 
-        [JsonIgnore]
-        public List<SkillRequirement> SkillRequirements { get; set; }
+       // [JsonIgnore]
+       // public List<SkillRequirement> SkillRequirements { get; set; }
 
         [JsonProperty("ResourcePreferences")]
         private RelatedObjectCollection<ResourcePreference> resourcePreferencesCollection { get; set; }
@@ -106,7 +106,6 @@ namespace SalesforceLibrary.DataModel.Standard
 
         public WorkOrder(string i_ObjectId) : base(i_ObjectId)
         {
-            SkillRequirements = new List<SkillRequirement>();
             ResourcePreferences = new List<ResourcePreference>();
         }
 
