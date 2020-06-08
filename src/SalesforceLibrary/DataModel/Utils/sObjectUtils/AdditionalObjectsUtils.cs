@@ -17,12 +17,14 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
         private DateTime m_Start;
         private DateTime m_Finish;
         private HashSet<string> m_CalendarIDs;
+        private List<sObject> m_ResourceServices = new List<sObject>();
 
         private class DeserializedQueryResult
         {
             public Double? totalSize;
             public Boolean? done;
             public List<sObject> records;
+            public string nextRecordsUrl;
         }
 
         public enum eAdditionalObjectQuery
@@ -48,8 +50,7 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             switch (i_AdditionalObjQuery)
             {
                 case eAdditionalObjectQuery.ServicesInResourcesTimeDomain:
-                    i_ABData.ABAdditionalObjects.ServicesById =
-                    deserializedQuery.records.ToDictionary(record => record.Id);
+                    deserializeServicesInResourcesTimeDomain(i_ABData, deserializedQuery);
                     break;
                 
                 case eAdditionalObjectQuery.ResourcesAdditionalObjects:
@@ -76,6 +77,21 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             }
         }
 
+        private void deserializeServicesInResourcesTimeDomain(AppointmentBookingData i_ABData, DeserializedQueryResult i_DeserializedQuery)
+        {
+            m_ResourceServices.AddRange(i_DeserializedQuery.records);
+            
+            if (i_DeserializedQuery.nextRecordsUrl != null)
+            {
+                i_ABData.ABAdditionalObjects.nextRecordsUrl = i_DeserializedQuery.nextRecordsUrl;
+            }
+            else
+            {
+                i_ABData.ABAdditionalObjects.ServicesById =
+                    m_ResourceServices.ToDictionary(record => record.Id);
+            }
+        }
+
         private void deserializedResourceTerritories(AppointmentBookingData i_ABData, List<sObject> i_DeserializedRecords)
         {
             m_CalendarIDs = new HashSet<string>();
@@ -97,6 +113,8 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
 
                 m_CalendarIDs.Add(!string.IsNullOrEmpty(stmOpHours) ? stmOpHours : terrOpHours);
             }
+
+            i_ABData.ABAdditionalObjects.ResourceTerritories = i_DeserializedRecords;
         }
 
         public override string getQuery(AppointmentBookingRequest i_Request = null,

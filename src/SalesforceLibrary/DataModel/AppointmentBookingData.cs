@@ -35,6 +35,8 @@ namespace Processor
             public List<sObject> ResourceTerritories { get; set; }
             public  List<sObject> Capacities { get; set; }
             public List<sObject> Calendars { get; set; }
+
+            public string nextRecordsUrl { get; set; }
         }
         
         public AdditionalObjects ABAdditionalObjects

@@ -100,6 +100,9 @@ namespace Processor
             string resServicesStr = m_FSLClient.ExecuteQuery(resServicesQuery);
             deselializeQueryResult(additionalObjectsUtils, resServicesStr,AdditionalObjectsUtils.eAdditionalObjectQuery.ServicesInResourcesTimeDomain );
             
+            string resServicesNextRecordsStr = m_FSLClient.ExecuteQuery(m_ABData.ABAdditionalObjects.nextRecordsUrl, true);
+            deselializeQueryResult(additionalObjectsUtils, resServicesNextRecordsStr,AdditionalObjectsUtils.eAdditionalObjectQuery.ServicesInResourcesTimeDomain );
+            
             return Task.CompletedTask;
         }
 

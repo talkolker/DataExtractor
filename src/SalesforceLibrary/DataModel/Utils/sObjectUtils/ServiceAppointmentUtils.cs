@@ -189,7 +189,8 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             
             if(m_ServiceReqFieldsByRules.TryGetValue("Relevance Group Fields", out var relevanceGroupFields))
             {
-                requiredFields += ", " + formatList(relevanceGroupFields);
+                if(relevanceGroupFields != null && relevanceGroupFields.Count > 0)
+                    requiredFields += ", " + formatList(relevanceGroupFields);
             }
 
             return requiredFields;

@@ -119,6 +119,9 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             {
                 foreach (ServiceResource resource in deserializedQuery.records)
                 {
+                    if(resource.serviceResourceSkillsCollection == null)
+                        continue;
+                    
                     foreach (ServiceResourceSkill skill in resource.serviceResourceSkillsCollection.records)
                     {
                         if (skillIdToLevel.ContainsKey(skill.SkillId))
@@ -126,7 +129,8 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
                             if (matchSkillLevel && skill.SkillLevel < skillIdToLevel[skill.SkillId])
                                 continue;
 
-                            i_ABData.CandidatesById.Add(resource.Id, resource);
+                            if(!i_ABData.CandidatesById.ContainsKey(resource.Id))
+                                i_ABData.CandidatesById.Add(resource.Id, resource);
                         }
                     }
                 }

@@ -48,8 +48,17 @@ namespace SalesforceLibrary.REST.FSL
             //m_Client.AddDefaultHeader("Authorization", "OAuth " + m_SFToken.AccessToken);
         }
         
-        public string ExecuteQuery(string i_Query)
-        { 
+        public string ExecuteQuery(string i_Query, bool i_NextRecords = false)
+        {
+            if (i_NextRecords)
+            {
+                RestRequest restApiRequestNextRecords = new RestRequest(i_Query, Method.GET);
+                restApiRequestNextRecords.AddHeader("Authorization", "Bearer " + m_SFToken.AccessToken);
+                IRestResponse<string> restApiResponseNextRecords = m_Client.Execute<string>(restApiRequestNextRecords);
+
+                return restApiResponseNextRecords.Data;
+            }
+            
             string requestQuery = SF_Apex_Rest_Data_Endpoint + i_Query;
             RestRequest restApiRequest = new RestRequest(requestQuery, Method.GET);
             restApiRequest.AddHeader("Authorization", "Bearer " + m_SFToken.AccessToken);
