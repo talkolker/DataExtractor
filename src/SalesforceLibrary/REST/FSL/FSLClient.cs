@@ -23,6 +23,7 @@ namespace SalesforceLibrary.REST.FSL
     {
         private const string OaaS_Rest_Service_Endpoint = "OAASRestService/";
         private const string OaaS_Rest_Insights_Endpoint = "OAASRestInsights/";
+        private const string ABData_Rest_Service_Endpoint = "ABService/";
         private string m_DataUrl;
 
         private readonly bool m_IsManaged;
@@ -66,6 +67,36 @@ namespace SalesforceLibrary.REST.FSL
             try
             {
                 IRestResponse<string> restApiResponse = m_Client.Execute<string>(restApiRequest);
+
+                if (restApiResponse.IsSuccessful)
+                    return restApiResponse.Data;
+                else
+                {
+                    //TODO: throw relevant exception
+                    throw new Exception();
+                }
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Network failure", ex);
+            }
+        }
+        
+        //For apex rest service
+        public string RequestABData()
+        {
+            string servicesUrl = m_SFToken.URL + SF_Apex_Rest_Services_Endpoint; 
+            //m_DataUrl = m_SFToken.URL + SF_Apex_Rest_Data_Endpoint;
+            if (m_IsManaged)
+                servicesUrl += "FSL/";
+            RestClient client = new RestClient(servicesUrl);
+            client.AddDefaultHeader("Authorization", "OAuth " + m_SFToken.AccessToken);
+
+            RestRequest restApiRequest = new RestRequest(ABData_Rest_Service_Endpoint, Method.GET);
+
+            try
+            {
+                IRestResponse<string> restApiResponse = client.Execute<string>(restApiRequest);
 
                 if (restApiResponse.IsSuccessful)
                     return restApiResponse.Data;

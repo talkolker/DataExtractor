@@ -62,7 +62,7 @@ namespace Processor
             await Task.CompletedTask;
 
             //Dependant on resTerritoriesQuery
-            string calendarsQuery = additionalObjectsUtils.getQuery(m_Request, AdditionalObjectsUtils.eAdditionalObjectQuery.Capacities);
+            string calendarsQuery = additionalObjectsUtils.getQuery(m_Request, AdditionalObjectsUtils.eAdditionalObjectQuery.Calendars);
             string calendarsStr = m_FSLClient.ExecuteQuery(calendarsQuery);
             deselializeQueryResult(additionalObjectsUtils, calendarsStr, AdditionalObjectsUtils.eAdditionalObjectQuery.Calendars);
         }

@@ -30,9 +30,11 @@ namespace DataExtractor
                 RequestProcessor.ProcessRequest(requestXML);
                 watchWholeProcess.Stop();
 
-                LambdaLogger.Log("Whole process including login to SF took: " + watchWholeProcess.ElapsedMilliseconds +
-                                 " ms\n\n");
+                LambdaLogger.Log("Whole process by REST API including login to SF took: " + watchWholeProcess.ElapsedMilliseconds +
+                                 " ms\n");
                 watchWholeProcess.Reset();
+                
+                RequestProcessor.GetDataByApexRestService(requestXML);
             }
             catch (Exception ex)
             {

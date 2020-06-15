@@ -66,9 +66,29 @@ namespace Processor
             m_DataProcessor.ExtractData();
             
             watchExtractData.Stop();
-            LambdaLogger.Log("\nExtraction of data took: " + watchExtractData.ElapsedMilliseconds + " ms\n");
+            LambdaLogger.Log("\nExtraction of data by REST API took: " + watchExtractData.ElapsedMilliseconds + " ms\n");
             //logger.LogInformation(i_Context: "Data extraction", i_Message: "Querying AB data time using REST API", i_DurationInSeconds: watch.ElapsedMilliseconds);
             watchExtractData.Reset();
+        }
+        
+        public static void GetDataByApexRestService(string i_RequestBody)
+        {
+            Stopwatch watchExtractDataApexRest = new Stopwatch();
+            watchExtractDataApexRest.Start();
+            
+            SFDCScheduleRequest request;
+
+            request = ParseRequestString(i_RequestBody);
+            connectToSF(request);
+
+            string responseData = m_FSLClient.RequestABData();
+            watchExtractDataApexRest.Stop();
+
+            LambdaLogger.Log("\nExtraction of data by APEX REST Service took: " + responseData + " ms\n");
+            LambdaLogger.Log("Whole process by APEX REST Service including login to SF took: " + watchExtractDataApexRest.ElapsedMilliseconds +
+                             " ms\n\n");
+        
+            watchExtractDataApexRest.Reset();
         }
 
         private static void connectToSF(SFDCScheduleRequest i_Request)
