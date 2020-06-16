@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
@@ -6,6 +7,10 @@ using System.Xml.Serialization;
 using Amazon.Lambda.Core;
 using LoggingLibrary;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SalesforceLibrary.DataModel.Abstraction;
+using SalesforceLibrary.DataModel.Standard;
 using SalesforceLibrary.Requests;
 using SalesforceLibrary.REST.FSL;
 using SSMLibrary;
@@ -82,9 +87,11 @@ namespace Processor
             connectToSF(request);
 
             string responseData = m_FSLClient.RequestABData();
+            DeserializedQueryResult deserializedResponse = JsonConvert.DeserializeObject<DeserializedQueryResult>(responseData);
+            long elapsedTime = deserializedResponse.m_runtime;
             watchExtractDataApexRest.Stop();
 
-            LambdaLogger.Log("\nExtraction of data by APEX REST Service took: " + responseData + " ms\n");
+            LambdaLogger.Log("\nExtraction of data by APEX REST Service took: " + elapsedTime + " ms\n");
             LambdaLogger.Log("Whole process by APEX REST Service including login to SF took: " + watchExtractDataApexRest.ElapsedMilliseconds +
                              " ms\n\n");
         
@@ -106,14 +113,12 @@ namespace Processor
             m_FSLClient.Login(clientIdParameterStr, clientSecretParameterStr, i_Request.RefreshToken, i_Request.CustomSFDCAuthURL);
         }
 
-        private static AWSLogger createAwsLogger(SFDCScheduleRequest i_Request)
+        private class DeserializedQueryResult
         {
-            string environment = i_Request.IsTest ? "Sandbox" : "Production";
-
-            string feature = "Unkown";
-            
-            return new AWSLogger(i_Request.OrganizationId, i_Request.OrganizationType,
-                i_Request.InstanceName, environment, i_Request.AsyncIdentifier, "FSL", feature);
+            public Double? totalSize;
+            public Boolean? done;
+            public List<sObject> records;
+            public long m_runtime;
         }
     }
 }
