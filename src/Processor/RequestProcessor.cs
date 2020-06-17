@@ -109,8 +109,14 @@ namespace Processor
                 "3MVG9ZwZNrVajJ4juw533VQe450s71UT3VfQ.iBqsmmnxcogqAix1IusgXoHYMfR_xCRCWn9Gum5ICBFmeitF";
             string clientSecretParameterStr = "3591300309848784478";
             
-            
+            Stopwatch watchSFConnection = new Stopwatch();
+            watchSFConnection.Start();
             m_FSLClient.Login(clientIdParameterStr, clientSecretParameterStr, i_Request.RefreshToken, i_Request.CustomSFDCAuthURL);
+            watchSFConnection.Stop();
+            LambdaLogger.Log("\nConnection to SF took: " + watchSFConnection.ElapsedMilliseconds +
+                             " ms\n\n");
+            
+            watchSFConnection.Reset();
         }
 
         private class DeserializedQueryResult
