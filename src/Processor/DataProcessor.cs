@@ -57,8 +57,12 @@ namespace Processor
         private void getAdditionalObjects()
         {
             sObjectUtils additionalObjectsUtils = ObjectUtilsFactory.CreateUtilsByType(null, m_ABData, "AdditionalObjects");
-            
+
+            Stopwatch syncWatch = new Stopwatch();
+            syncWatch.Start();
             getAdditionalObjectsSync(additionalObjectsUtils);
+            syncWatch.Stop();
+            measurments.addMeasureToSubstarct(syncWatch.ElapsedMilliseconds);
             getAdditionalObjectsASync(additionalObjectsUtils);
 
             Stopwatch watch = new Stopwatch();
@@ -157,8 +161,8 @@ namespace Processor
             string resServicesStr = m_FSLClient.ExecuteQuery(resServicesQuery, Measures.SAS_QUERY, measurments, false, async);
             deselializeQueryResult(additionalObjectsUtils, resServicesStr,AdditionalObjectsUtils.eAdditionalObjectQuery.ServicesInResourcesTimeDomain, async);
             
-            string resServicesNextRecordsStr = m_FSLClient.ExecuteQuery(m_ABData.ABAdditionalObjects.nextRecordsUrl, Measures.SAS_QUERY, measurments,true, async);
-            deselializeQueryResult(additionalObjectsUtils, resServicesNextRecordsStr,AdditionalObjectsUtils.eAdditionalObjectQuery.ServicesInResourcesTimeDomain, async);
+            //string resServicesNextRecordsStr = m_FSLClient.ExecuteQuery(m_ABData.ABAdditionalObjects.nextRecordsUrl, Measures.SAS_QUERY, measurments,true, async);
+            //deselializeQueryResult(additionalObjectsUtils, resServicesNextRecordsStr,AdditionalObjectsUtils.eAdditionalObjectQuery.ServicesInResourcesTimeDomain, async);
             
             watch.Stop();
             if(!async)

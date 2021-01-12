@@ -64,7 +64,6 @@ namespace Processor
             connectToSF(request);
 
             string header = "\n~~~~~~~~ REST API ~~~~~~~~";
-            LambdaLogger.Log(header);
 
             m_DataProcessor = new DataProcessor(m_FSLClient, request);
             
@@ -72,17 +71,9 @@ namespace Processor
             watchExtractData.Start();
             
             RestAPIMeasurments measures = m_DataProcessor.ExtractData();
-            long msToRemove = measures.getMeasurments[Measures.SAS_PROCESSING];
-            msToRemove += measures.getMeasurments[Measures.ABSENCES_SHIFTS_PROCESSING];
-            msToRemove += measures.getMeasurments[Measures.ADITTIONAL_DATA_STM_PROCESSING];
-            msToRemove += measures.getMeasurments[Measures.CAPACITIES_PROCESSING];
-            msToRemove += measures.getMeasurments[Measures.SAS_QUERY];
-            msToRemove += measures.getMeasurments[Measures.ABSENCES_SHIFTS_QUERY];
-            msToRemove += measures.getMeasurments[Measures.ADITTIONAL_DATA_STM_QUERY];
-            msToRemove += measures.getMeasurments[Measures.CAPACITIES_QUERY];
             string finalMeasures = JsonConvert.SerializeObject(measures.getMeasurments, Formatting.Indented);
 
-            string log = header + "\nExtraction of data by REST API took: " + (watchExtractData.ElapsedMilliseconds - msToRemove) +
+            string log = header + "\nExtraction of data by REST API took: " + (watchExtractData.ElapsedMilliseconds - measures.MeasureToSubtract) +
                          " ms\nMeasurements per query:\n" + finalMeasures;
             watchExtractData.Stop();
             LambdaLogger.Log(log);
@@ -94,7 +85,6 @@ namespace Processor
         public static string GetDataByApexRestService(string i_RequestBody)
         {
             string header = "\n~~~~~~~~ APEX REST Service ~~~~~~~~";
-            LambdaLogger.Log(header);
 
             SFDCScheduleRequest request;
 

@@ -6,6 +6,14 @@ namespace Processor
     public class Measurments
     {
         Dictionary<String, long> measurments = new Dictionary<string, long>();
+        private long measureToSubtract;
+
+        public long MeasureToSubtract => measureToSubtract;
+
+        public void addMeasureToSubstarct(long syncWatchElapsedMilliseconds)
+        {
+            measureToSubtract = syncWatchElapsedMilliseconds;
+        }
 
         public Dictionary<string, long> getMeasurments => measurments;
 
@@ -83,10 +91,5 @@ namespace Processor
 
     public class RestAPIMeasurments : Measurments
     {
-    }
-
-    public class ApexRestMeasurements : Measurments
-    {
-            
     }
 }
