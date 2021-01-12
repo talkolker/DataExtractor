@@ -248,10 +248,10 @@ namespace Processor
             
             deselializeQueryResult(STMServiceUtils, stmStr);
             
-            //string stmAdditionalMembersQuery = STMServiceUtils.getQuery(m_Request);
-            //string stmAdditionalMembersQueryStr = m_FSLClient.ExecuteQuery(stmAdditionalMembersQuery, Measures.STM_QUERY, measurments);
+            string stmAdditionalMembersQuery = STMServiceUtils.getQuery(m_Request);
+            string stmAdditionalMembersQueryStr = m_FSLClient.ExecuteQuery(stmAdditionalMembersQuery, Measures.STM_QUERY, measurments);
             
-            //deselializeQueryResult(STMServiceUtils, stmAdditionalMembersQueryStr);
+            deselializeQueryResult(STMServiceUtils, stmAdditionalMembersQueryStr);
             watch.Stop();
             measurments.addMeasure(Measures.STM_PROCESSING, watch.ElapsedMilliseconds);
         }
