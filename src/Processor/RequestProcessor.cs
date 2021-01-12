@@ -103,7 +103,7 @@ namespace Processor
             string log = "\n\n" + header + "\nExtraction of data by APEX REST:\nExtraction in SFS MP: " + elapsedTime + " ms\n" +
                          "Request time (send request + get response) from AWS lambda to org: " + (watchExtractDataApexRest.ElapsedMilliseconds - elapsedTime) +
                              " ms\nMeasurements per query:\n" +
-                         dictionaryToString(measurments);
+                         dictionaryToString(measurments) + "\n\n";
             LambdaLogger.Log(log);
 
             watchExtractDataApexRest.Reset();

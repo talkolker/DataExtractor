@@ -19,8 +19,8 @@ namespace Processor
 
         public void updateMesurments()
         {
-            measurments[Measures.RULES_PROCESSING] -= measurments[Measures.RULES_QUERY];
-            measurments[Measures.OBJECTIVES_PROCESSING] -= measurments[Measures.OBJECTIVES_QUERY];
+            //measurments[Measures.RULES_PROCESSING] -= measurments[Measures.RULES_QUERY];
+            //measurments[Measures.OBJECTIVES_PROCESSING] -= measurments[Measures.OBJECTIVES_QUERY];
             measurments[Measures.SA_PROCESSING] -= measurments[Measures.SA_QUERY];
             measurments[Measures.DEPENDENCIES_PROCESSING] -= measurments[Measures.DEPENDENCIES_QUERY];
             measurments[Measures.MST_PROCESSING] -= measurments.ContainsKey(Measures.MST_QUERY) ? measurments[Measures.MST_QUERY] : 0;
@@ -29,10 +29,10 @@ namespace Processor
             measurments[Measures.VISITING_HOURS_PROCESSING] -= measurments.ContainsKey(Measures.VISITING_HOURS_QUERY) ? measurments[Measures.VISITING_HOURS_QUERY] : 0;
             measurments[Measures.RESOURCES_PROCESSING] -= measurments[Measures.RESOURCES_QUERY];
             measurments[Measures.UNLICENSED_USERS_PROCESSING] -= measurments[Measures.UNLICENSED_USERS_QUERY];
-            measurments[Measures.SAS_PROCESSING] -= measurments[Measures.SAS_QUERY];
-            measurments[Measures.ABSENCES_SHIFTS_PROCESSING] -= measurments[Measures.ABSENCES_SHIFTS_QUERY];
-            measurments[Measures.ADITTIONAL_DATA_STM_PROCESSING] -= measurments[Measures.ADITTIONAL_DATA_STM_QUERY];
-            measurments[Measures.CAPACITIES_PROCESSING] -= measurments[Measures.CAPACITIES_QUERY];
+            //measurments[Measures.SAS_PROCESSING] -= measurments[Measures.SAS_QUERY];
+            //measurments[Measures.ABSENCES_SHIFTS_PROCESSING] -= measurments[Measures.ABSENCES_SHIFTS_QUERY];
+            //measurments[Measures.ADITTIONAL_DATA_STM_PROCESSING] -= measurments[Measures.ADITTIONAL_DATA_STM_QUERY];
+            //measurments[Measures.CAPACITIES_PROCESSING] -= measurments[Measures.CAPACITIES_QUERY];
             measurments[Measures.CALENDARS_PROCESSING] -= measurments[Measures.CALENDARS_QUERY];
         }
 

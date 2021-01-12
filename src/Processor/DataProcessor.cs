@@ -58,11 +58,11 @@ namespace Processor
         {
             sObjectUtils additionalObjectsUtils = ObjectUtilsFactory.CreateUtilsByType(null, m_ABData, "AdditionalObjects");
 
-            Stopwatch syncWatch = new Stopwatch();
-            syncWatch.Start();
-            getAdditionalObjectsSync(additionalObjectsUtils);
-            syncWatch.Stop();
-            measurments.addMeasureToSubstarct(syncWatch.ElapsedMilliseconds);
+            //Stopwatch syncWatch = new Stopwatch();
+            //syncWatch.Start();
+            //getAdditionalObjectsSync(additionalObjectsUtils);
+            //syncWatch.Stop();
+            //measurments.addMeasureToSubstarct(syncWatch.ElapsedMilliseconds);
             getAdditionalObjectsASync(additionalObjectsUtils);
 
             Stopwatch watch = new Stopwatch();
@@ -248,10 +248,10 @@ namespace Processor
             
             deselializeQueryResult(STMServiceUtils, stmStr);
             
-            string stmAdditionalMembersQuery = STMServiceUtils.getQuery(m_Request);
-            string stmAdditionalMembersQueryStr = m_FSLClient.ExecuteQuery(stmAdditionalMembersQuery, Measures.STM_QUERY, measurments);
+            //string stmAdditionalMembersQuery = STMServiceUtils.getQuery(m_Request);
+            //string stmAdditionalMembersQueryStr = m_FSLClient.ExecuteQuery(stmAdditionalMembersQuery, Measures.STM_QUERY, measurments);
             
-            deselializeQueryResult(STMServiceUtils, stmAdditionalMembersQueryStr);
+            //deselializeQueryResult(STMServiceUtils, stmAdditionalMembersQueryStr);
             watch.Stop();
             measurments.addMeasure(Measures.STM_PROCESSING, watch.ElapsedMilliseconds);
         }
@@ -325,7 +325,7 @@ namespace Processor
 
         private void getPolicyRulesAndObjectives()
         {
-            getPolicyRulesAndObjectivesSync();
+            //getPolicyRulesAndObjectivesSync();
             getPolicyRulesAndObjectivesASync();
         }
         

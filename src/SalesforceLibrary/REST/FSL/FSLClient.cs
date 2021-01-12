@@ -49,6 +49,7 @@ namespace SalesforceLibrary.REST.FSL
             {
                 RestRequest restApiRequestNextRecords = new RestRequest(i_Query, Method.GET);
                 restApiRequestNextRecords.AddHeader("Authorization", "Bearer " + m_SFToken.AccessToken);
+                restApiRequestNextRecords.AddHeader("Accept-Encoding", "gzip");
                 IRestResponse<string> restApiResponseNextRecords = m_Client.Execute<string>(restApiRequestNextRecords);
 
                 return restApiResponseNextRecords.Data;
@@ -57,6 +58,7 @@ namespace SalesforceLibrary.REST.FSL
             string requestQuery = SF_Apex_Rest_Data_Endpoint + i_Query;
             RestRequest restApiRequest = new RestRequest(requestQuery, Method.GET);
             restApiRequest.AddHeader("Authorization", "Bearer " + m_SFToken.AccessToken);
+            restApiRequest.AddHeader("Accept-Encoding", "gzip");
 
             try
             {
