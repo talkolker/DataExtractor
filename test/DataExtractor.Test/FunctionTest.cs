@@ -18,12 +18,13 @@ namespace DataExtractor.Tests
       private static readonly HttpClient client = new HttpClient();
 
     [Fact]
-    public async Task TestDataExtractorFunctionHandler()
+    public async Task TestRestApi()
     {
         var function = new Function();
-        await function.FunctionHandler();
+        string measurments = await function.FunctionHandler();
 
-        Console.WriteLine("Finished successfully");
+        Assert.NotNull(measurments);
+        Assert.NotEqual("{}", measurments);
     }
     
     
@@ -32,7 +33,7 @@ namespace DataExtractor.Tests
     {
         string requestXML = "<AppointmentBookingRequest><RefreshToken>5Aep861i3pidIObecHklRnSH1FnIZsznQb_i3Jo9UC6ey5emPA8bFpnVVfFu5kexGfE0sWAb1qtfPkJLVQsT4Sd</RefreshToken><IsEmergency>false</IsEmergency><ServiceID>08pe0000000CbHtAAK</ServiceID><IsTest>true</IsTest><IsManaged>false</IsManaged><SchedulingPolicyID>a0Qe000000AzjJNEAZ</SchedulingPolicyID><InstanceName>CS15</InstanceName><OrganizationId>00De0000005T9GFEA0</OrganizationId><OrganizationType>Enterprise Edition</OrganizationType><TravelUnit>km</TravelUnit><SearchSlotsMaxDays>14</SearchSlotsMaxDays><ApprovedAbsences>true</ApprovedAbsences></AppointmentBookingRequest>";
         
-        RequestProcessor.GetDataByApexRestService(requestXML);
+        string measurments = RequestProcessor.GetDataByApexRestService(requestXML);
 
         Console.WriteLine("Finished successfully");
     }

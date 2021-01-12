@@ -23,7 +23,7 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             m_ABData = i_ABData;
         }
         public override void Deserialize(string i_QueryResult, AppointmentBookingData i_ABData,
-            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default)
+            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default, bool async = false)
         {
             DeserializedQueryResult deserializedQuery =
                 JsonConvert.DeserializeObject<DeserializedQueryResult>(i_QueryResult);

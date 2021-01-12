@@ -17,7 +17,7 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
     {
         //TODO: add try catch around every implementation of this method
         public abstract void Deserialize(string i_QueryResult, AppointmentBookingData i_ABData,
-            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default);
+            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default, bool async = false);
         public abstract string getQuery(AppointmentBookingRequest i_Request = null,
             AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default);
 

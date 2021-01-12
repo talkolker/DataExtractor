@@ -1,21 +1,11 @@
 ﻿using LoggingLibrary;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RestSharp;
-using SalesforceLibrary.DataModel;
-using SalesforceLibrary.DataModel.Standard;
-using SalesforceLibrary.DataModel.Utils;
-using SalesforceLibrary.Exceptions;
-using SalesforceLibrary.REST.FSL.OaaS;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using TransactionLibrary;
+using System.Diagnostics;
+using System.Net.Cache;
+using Processor;
+
 
 namespace SalesforceLibrary.REST.FSL
 {
@@ -46,11 +36,15 @@ namespace SalesforceLibrary.REST.FSL
             if (m_IsManaged)
                 servicesUrl += "FSL/";
             m_Client = new RestClient(m_SFToken.URL);
+            m_Client.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.Revalidate);
             //m_Client.AddDefaultHeader("Authorization", "OAuth " + m_SFToken.AccessToken);
         }
         
-        public string ExecuteQuery(string i_Query, bool i_NextRecords = false)
+        public string ExecuteQuery(string i_Query, string i_MeasureType, Measurments i_Mesurements,
+            bool i_NextRecords = false, bool async = false)
         {
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
             if (i_NextRecords)
             {
                 RestRequest restApiRequestNextRecords = new RestRequest(i_Query, Method.GET);
@@ -76,9 +70,15 @@ namespace SalesforceLibrary.REST.FSL
                     throw new Exception();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception("Network failure", ex);
+            }
+            finally
+            {
+                watch.Stop();
+                if(!async)
+                    i_Mesurements.addMeasure(i_MeasureType, watch.ElapsedMilliseconds);
             }
         }
         
@@ -90,9 +90,11 @@ namespace SalesforceLibrary.REST.FSL
             if (m_IsManaged)
                 servicesUrl += "FSL/";
             RestClient client = new RestClient(servicesUrl);
+            m_Client.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.Revalidate);
             client.AddDefaultHeader("Authorization", "OAuth " + m_SFToken.AccessToken);
 
             RestRequest restApiRequest = new RestRequest(ABData_Rest_Service_Endpoint, Method.GET);
+            restApiRequest.AddHeader("Accept-Encoding", "gzip");
 
             try
             {
@@ -111,6 +113,5 @@ namespace SalesforceLibrary.REST.FSL
                 throw new Exception("Network failure", ex);
             }
         }
-
     }
 }

@@ -19,7 +19,7 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
         }
         
         public override void Deserialize(string i_QueryResult, AppointmentBookingData i_ABData,
-            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default)
+            AdditionalObjectsUtils.eAdditionalObjectQuery i_AdditionalObjQuery = default, bool async = false)
         {
             //TODO: add support for long responses that has to be pulled with identifier
             DeserializedQueryResult deserializedQuery =

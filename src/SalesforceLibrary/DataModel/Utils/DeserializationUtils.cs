@@ -9,10 +9,10 @@ using SalesforceLibrary.DataModel.Abstraction;
 using SalesforceLibrary.DataModel.Utils;
 using TimeZoneConverter;
 
-internal static class DeserializationUtils
+public static class DeserializationUtils
 {
     internal static readonly ISet<string> NamespacesToIgnore;
-    internal static readonly JsonSerializerSettings SFJsonSerializerSettings;
+    public static readonly JsonSerializerSettings SFJsonSerializerSettings;
 
     internal const string k_NamespaceFieldFormat = "{0}__{1}";
 

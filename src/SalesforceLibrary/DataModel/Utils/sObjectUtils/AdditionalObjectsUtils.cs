@@ -42,7 +42,7 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             m_Resources = formatIdList(m_ABData.CandidatesById.Keys.ToList());
         }
         public override void Deserialize(string i_QueryResult, AppointmentBookingData i_ABData,
-            eAdditionalObjectQuery i_AdditionalObjQuery = default)
+            eAdditionalObjectQuery i_AdditionalObjQuery = default, bool async = false)
         {
             DeserializedQueryResult deserializedQuery =
                 JsonConvert.DeserializeObject<DeserializedQueryResult>(i_QueryResult);
@@ -50,7 +50,7 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             switch (i_AdditionalObjQuery)
             {
                 case eAdditionalObjectQuery.ServicesInResourcesTimeDomain:
-                    deserializeServicesInResourcesTimeDomain(i_ABData, deserializedQuery);
+                    deserializeServicesInResourcesTimeDomain(i_ABData, deserializedQuery, async);
                     break;
                 
                 case eAdditionalObjectQuery.ResourcesAdditionalObjects:
@@ -77,9 +77,12 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             }
         }
 
-        private void deserializeServicesInResourcesTimeDomain(AppointmentBookingData i_ABData, DeserializedQueryResult i_DeserializedQuery)
+        private void deserializeServicesInResourcesTimeDomain(AppointmentBookingData i_ABData, DeserializedQueryResult i_DeserializedQuery, bool async)
         {
-            m_ResourceServices.AddRange(i_DeserializedQuery.records);
+            if (!async)
+            {
+                m_ResourceServices.AddRange(i_DeserializedQuery.records);
+            }
             
             if (i_DeserializedQuery.nextRecordsUrl != null)
             {
@@ -87,8 +90,9 @@ namespace SalesforceLibrary.DataModel.Utils.sObjectUtils
             }
             else
             {
-                i_ABData.ABAdditionalObjects.ServicesById =
-                    m_ResourceServices.ToDictionary(record => record.Id);
+                if(!async)
+                    i_ABData.ABAdditionalObjects.ServicesById =
+                        m_ResourceServices.ToDictionary(record => record.Id);
             }
         }
 

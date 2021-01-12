@@ -9,11 +9,13 @@ using LoggingLibrary;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using SalesforceLibrary.DataModel.Abstraction;
 using SalesforceLibrary.DataModel.Standard;
 using SalesforceLibrary.Requests;
 using SalesforceLibrary.REST.FSL;
 using SSMLibrary;
+using Formatting = Newtonsoft.Json.Formatting;
 
 namespace Processor
 {
@@ -21,6 +23,8 @@ namespace Processor
     {
         private static FSLClient m_FSLClient;
         private static DataProcessor m_DataProcessor;
+        private static bool m_IsApexRest = false;
+        private static long m_SFLoginTime;
 
         private static SFDCScheduleRequest ParseRequestString(string i_RequestBody)
         {
@@ -51,51 +55,78 @@ namespace Processor
             return optimizationRequest;
         }
 
-        public static void ProcessRequest(string i_RequestBody)
+        public static string ProcessRequest(string i_RequestBody)
         {
             SFDCScheduleRequest request;
 
             request = ParseRequestString(i_RequestBody);
 
-            //SSMClient.IntializeSSMParameters();
-            //AWSLogger AWSLogger = createAwsLogger(request);
-            //LogUtils.LoggerFactory.AddAWSLogger(AWSLogger, LogLevel.Information);
-
             connectToSF(request);
 
+            string header = "\n~~~~~~~~ REST API ~~~~~~~~";
+            LambdaLogger.Log(header);
+
             m_DataProcessor = new DataProcessor(m_FSLClient, request);
-            //ILogger logger = LogUtils.CreateLogger("Extract Data");
+            
             Stopwatch watchExtractData = new Stopwatch();
             watchExtractData.Start();
             
-            m_DataProcessor.ExtractData();
-            
+            RestAPIMeasurments measures = m_DataProcessor.ExtractData();
+            long msToRemove = measures.getMeasurments[Measures.SAS_PROCESSING];
+            msToRemove += measures.getMeasurments[Measures.ABSENCES_SHIFTS_PROCESSING];
+            msToRemove += measures.getMeasurments[Measures.ADITTIONAL_DATA_STM_PROCESSING];
+            msToRemove += measures.getMeasurments[Measures.CAPACITIES_PROCESSING];
+            msToRemove += measures.getMeasurments[Measures.SAS_QUERY];
+            msToRemove += measures.getMeasurments[Measures.ABSENCES_SHIFTS_QUERY];
+            msToRemove += measures.getMeasurments[Measures.ADITTIONAL_DATA_STM_QUERY];
+            msToRemove += measures.getMeasurments[Measures.CAPACITIES_QUERY];
+            string finalMeasures = JsonConvert.SerializeObject(measures.getMeasurments, Formatting.Indented);
+
+            string log = header + "\nExtraction of data by REST API took: " + (watchExtractData.ElapsedMilliseconds - msToRemove) +
+                         " ms\nMeasurements per query:\n" + finalMeasures;
             watchExtractData.Stop();
-            LambdaLogger.Log("\nExtraction of data by REST API took: " + watchExtractData.ElapsedMilliseconds + " ms\n");
-            //logger.LogInformation(i_Context: "Data extraction", i_Message: "Querying AB data time using REST API", i_DurationInSeconds: watch.ElapsedMilliseconds);
+            LambdaLogger.Log(log);
+            //LambdaLogger.Log("Whole process by REST API including login to SF took: " + (watchExtractData.ElapsedMilliseconds + m_SFLoginTime) +" ms\n");
             watchExtractData.Reset();
+            return log;
         }
         
-        public static void GetDataByApexRestService(string i_RequestBody)
+        public static string GetDataByApexRestService(string i_RequestBody)
         {
-            Stopwatch watchExtractDataApexRest = new Stopwatch();
-            watchExtractDataApexRest.Start();
-            
+            string header = "\n~~~~~~~~ APEX REST Service ~~~~~~~~";
+            LambdaLogger.Log(header);
+
             SFDCScheduleRequest request;
 
             request = ParseRequestString(i_RequestBody);
             connectToSF(request);
-
+            
+            Stopwatch watchExtractDataApexRest = new Stopwatch();
+            watchExtractDataApexRest.Start();
+            
             string responseData = m_FSLClient.RequestABData();
             DeserializedQueryResult deserializedResponse = JsonConvert.DeserializeObject<DeserializedQueryResult>(responseData);
             long elapsedTime = deserializedResponse.m_runtime;
+            Dictionary<string, decimal> measurments = deserializedResponse.measures;
             watchExtractDataApexRest.Stop();
 
-            LambdaLogger.Log("\nExtraction of data by APEX REST Service took: " + elapsedTime + " ms\n");
-            LambdaLogger.Log("Whole process by APEX REST Service including login to SF took: " + watchExtractDataApexRest.ElapsedMilliseconds +
-                             " ms\n\n");
-        
+            string log = "\n\n" + header + "\nExtraction of data by APEX REST:\nExtraction in SFS MP: " + elapsedTime + " ms\n" +
+                         "Request time (send request + get response) from AWS lambda to org: " + (watchExtractDataApexRest.ElapsedMilliseconds - elapsedTime) +
+                             " ms\nMeasurements per query:\n" +
+                         dictionaryToString(measurments);
+            LambdaLogger.Log(log);
+
             watchExtractDataApexRest.Reset();
+
+            return log;
+        }
+
+        private static string dictionaryToString(Dictionary <string, decimal> dictionary) {  
+            string dictionaryString = "{\n";  
+            foreach(KeyValuePair <string, decimal> keyValues in dictionary) {  
+                dictionaryString += "   " + keyValues.Key + " : " + keyValues.Value + "\n";  
+            }  
+            return dictionaryString.TrimEnd(',', ' ') + "}";  
         }
 
         private static void connectToSF(SFDCScheduleRequest i_Request)
@@ -113,9 +144,14 @@ namespace Processor
             watchSFConnection.Start();
             m_FSLClient.Login(clientIdParameterStr, clientSecretParameterStr, i_Request.RefreshToken, i_Request.CustomSFDCAuthURL);
             watchSFConnection.Stop();
-            LambdaLogger.Log("\nConnection to SF took: " + watchSFConnection.ElapsedMilliseconds +
-                             " ms\n\n");
-            
+            if (!m_IsApexRest)
+            {
+                //LambdaLogger.Log("\nConnection to SF took: " + watchSFConnection.ElapsedMilliseconds +
+                //                 " ms");
+                m_IsApexRest = true;
+                m_SFLoginTime = watchSFConnection.ElapsedMilliseconds;
+            }
+
             watchSFConnection.Reset();
         }
 
@@ -125,6 +161,7 @@ namespace Processor
             public Boolean? done;
             public List<sObject> records;
             public long m_runtime;
+            public Dictionary<string, decimal> measures;
         }
     }
 }
