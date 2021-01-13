@@ -4,6 +4,7 @@ using RestSharp;
 using System;
 using System.Diagnostics;
 using System.Net.Cache;
+using Microsoft.AspNetCore.Http.Features;
 using Processor;
 
 
@@ -111,6 +112,33 @@ namespace SalesforceLibrary.REST.FSL
                 }
             }
             catch(Exception ex)
+            {
+                throw new Exception("Network failure", ex);
+            }
+        }
+
+        public bool SendEmptyRequest()
+        {
+            string servicesUrl = m_SFToken.URL + SF_Apex_Rest_Services_Endpoint;
+            if (m_IsManaged)
+                servicesUrl += "FSL/";
+            RestClient client = new RestClient(servicesUrl);
+            m_Client.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.Revalidate);
+            RestRequest restApiRequest = new RestRequest(ABData_Rest_Service_Endpoint, Method.GET);
+            restApiRequest.AddHeader("Authorization", "Bearer " + m_SFToken.AccessToken);
+            restApiRequest.AddHeader("Accept-Encoding", "gzip");
+
+            try
+            {
+                IRestResponse<string> restApiResponse = client.Execute<string>(restApiRequest);
+                if (restApiResponse.IsSuccessful)
+                    return true;
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
             {
                 throw new Exception("Network failure", ex);
             }

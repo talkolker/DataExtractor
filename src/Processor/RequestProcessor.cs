@@ -101,7 +101,7 @@ namespace Processor
             watchExtractDataApexRest.Stop();
 
             string log = "\n\n" + header + "\nExtraction of data by APEX REST:\nExtraction in SFS MP: " + elapsedTime + " ms\n" +
-                         "Request time (send request + get response) from AWS lambda to org: " + (watchExtractDataApexRest.ElapsedMilliseconds - elapsedTime) +
+                         "Total extraction of data by REST API took: " + (watchExtractDataApexRest.ElapsedMilliseconds) +
                              " ms\nMeasurements per query:\n" +
                          dictionaryToString(measurments) + "\n\n";
             LambdaLogger.Log(log);
@@ -152,6 +152,34 @@ namespace Processor
             public List<sObject> records;
             public long m_runtime;
             public Dictionary<string, decimal> measures;
+        }
+
+        public static string SendEmptyRequest(string i_RequestBody)
+        {
+            string header = "\n~~~~~~~~ REST API Empty Request ~~~~~~~~\n";
+
+            SFDCScheduleRequest request;
+
+            request = ParseRequestString(i_RequestBody);
+            connectToSF(request);
+            long elapsedTime = 0;
+            for (int i = 0; i < 10; i++)
+            {
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+
+                bool success = m_FSLClient.SendEmptyRequest();
+                if (!success)
+                {
+                    throw new Exception("failed to send empty request");
+                }
+                watch.Stop();
+
+                elapsedTime += watch.ElapsedMilliseconds;
+            }
+
+            string result = header + (elapsedTime / 10) + "\n";
+            return result;
         }
     }
 }
