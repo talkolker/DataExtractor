@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using RestSharp;
 using SalesforceLibrary.DataModel.Abstraction;
 using SalesforceLibrary.DataModel.Standard;
 using SalesforceLibrary.Requests;
@@ -133,13 +134,15 @@ namespace Processor
             long elapsedTime = 0;
             Dictionary<string, decimal> ongoingMeasurments = new Dictionary<string, decimal>();
             long totalExtraction = 0;
+            m_FSLClient.setClientURIforApexRest();
+            RestRequest restRequest = m_FSLClient.getApexRequest();
 
             for (int i = 0; i < 100; i++)
             {
                 Stopwatch watchExtractDataApexRest = new Stopwatch();
                 watchExtractDataApexRest.Start();
                 
-                string responseData = m_FSLClient.RequestABData();
+                string responseData = m_FSLClient.RequestABData(restRequest);
                 DeserializedQueryResult deserializedResponse =
                     JsonConvert.DeserializeObject<DeserializedQueryResult>(responseData);
                 elapsedTime += deserializedResponse.m_runtime;
@@ -238,12 +241,15 @@ namespace Processor
             request = ParseRequestString(i_RequestBody);
             connectToSF(request);
             long elapsedTime = 0;
+            m_FSLClient.setClientURI();
+            RestRequest restRequest = m_FSLClient.getEmptyRequest();
+            
             for (int i = 0; i < 100; i++)
             {
                 Stopwatch watch = new Stopwatch();
                 watch.Start();
 
-                bool success = m_FSLClient.SendEmptyRequest();
+                bool success = m_FSLClient.SendEmptyRequest(restRequest);
                 if (!success)
                 {
                     throw new Exception("failed to send empty request");

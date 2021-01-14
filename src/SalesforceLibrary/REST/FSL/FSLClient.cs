@@ -89,22 +89,11 @@ namespace SalesforceLibrary.REST.FSL
         }
         
         //For apex rest service
-        public string RequestABData()
+        public string RequestABData(RestRequest restRequest)
         {
-            string servicesUrl = m_SFToken.URL + SF_Apex_Rest_Services_Endpoint; 
-            //m_DataUrl = m_SFToken.URL + SF_Apex_Rest_Data_Endpoint;
-            if (m_IsManaged)
-                servicesUrl += "FSL/";
-            RestClient client = new RestClient(servicesUrl);
-            m_Client.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.Revalidate);
-            client.AddDefaultHeader("Authorization", "OAuth " + m_SFToken.AccessToken);
-
-            RestRequest restApiRequest = new RestRequest(ABData_Rest_Service_Endpoint, Method.GET);
-            restApiRequest.AddHeader("Accept-Encoding", "gzip");
-
             try
             {
-                IRestResponse<string> restApiResponse = client.Execute<string>(restApiRequest);
+                IRestResponse<string> restApiResponse = m_Client.Execute<string>(restRequest);
 
                 if (restApiResponse.IsSuccessful)
                     return restApiResponse.Data;
@@ -119,21 +108,20 @@ namespace SalesforceLibrary.REST.FSL
                 throw new Exception("Network failure", ex);
             }
         }
-
-        public bool SendEmptyRequest()
+        
+        public RestRequest getApexRequest()
         {
-            string servicesUrl = m_SFToken.URL + SF_Apex_Rest_Services_Endpoint;
-            if (m_IsManaged)
-                servicesUrl += "FSL/";
-            RestClient client = new RestClient(servicesUrl);
-            m_Client.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.Revalidate);
             RestRequest restApiRequest = new RestRequest(ABData_Rest_Service_Endpoint, Method.GET);
-            restApiRequest.AddHeader("Authorization", "Bearer " + m_SFToken.AccessToken);
             restApiRequest.AddHeader("Accept-Encoding", "gzip");
 
+            return restApiRequest;
+        }
+
+        public bool SendEmptyRequest(RestRequest restRequest)
+        {
             try
             {
-                IRestResponse<string> restApiResponse = client.Execute<string>(restApiRequest);
+                IRestResponse<string> restApiResponse = m_Client.Execute<string>(restRequest);
                 if (restApiResponse.IsSuccessful)
                     return true;
                 else
@@ -145,6 +133,35 @@ namespace SalesforceLibrary.REST.FSL
             {
                 throw new Exception("Network failure", ex);
             }
+        }
+
+        public void setClientURI()
+        {
+            string servicesUrl = m_SFToken.URL + SF_Apex_Rest_Services_Endpoint;
+            if (m_IsManaged)
+                servicesUrl += "FSL/";
+            m_Client.BaseUrl = new Uri(servicesUrl);
+            m_Client.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.Revalidate);
+        }
+        
+        public void setClientURIforApexRest()
+        {
+            string servicesUrl = m_SFToken.URL + SF_Apex_Rest_Services_Endpoint;
+            if (m_IsManaged)
+                servicesUrl += "FSL/";
+            m_Client.BaseUrl = new Uri(servicesUrl);
+            m_Client.CachePolicy = new HttpRequestCachePolicy(HttpRequestCacheLevel.Revalidate);
+            m_Client.AddDefaultHeader("Authorization", "OAuth " + m_SFToken.AccessToken);
+        }
+
+        public RestRequest getEmptyRequest()
+        {
+            //RestRequest restApiRequest = new RestRequest(ABData_Rest_Service_Endpoint, Method.POST);
+            RestRequest restApiRequest = new RestRequest("EmptyRest/", Method.GET);
+            restApiRequest.AddHeader("Authorization", "Bearer " + m_SFToken.AccessToken);
+            restApiRequest.AddHeader("Accept-Encoding", "gzip");
+
+            return restApiRequest;
         }
     }
 }
