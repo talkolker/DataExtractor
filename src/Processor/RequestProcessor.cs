@@ -66,22 +66,61 @@ namespace Processor
             string header = "\n~~~~~~~~ REST API ~~~~~~~~";
 
             m_DataProcessor = new DataProcessor(m_FSLClient, request);
-            
-            Stopwatch watchExtractData = new Stopwatch();
-            watchExtractData.Start();
-            
-            RestAPIMeasurments measures = m_DataProcessor.ExtractData();
-            string finalMeasures = JsonConvert.SerializeObject(measures.getMeasurments, Formatting.Indented);
 
-            string log = header + "\nExtraction of data by REST API took: " + (watchExtractData.ElapsedMilliseconds - measures.MeasureToSubtract) +
-                         " ms\nMeasurements per query:\n" + finalMeasures;
-            watchExtractData.Stop();
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            RestAPIMeasurments measures = new RestAPIMeasurments();
+            m_DataProcessor.ExtractData(measures);
+            watch.Stop();
+            long elapsedTime = watch.ElapsedMilliseconds;
+            watch.Reset();
+            
+            for (int i = 0; i < 99; i++)
+            {
+                Stopwatch watchExtractData = new Stopwatch();
+                watchExtractData.Start();
+                RestAPIMeasurments currMeasures = new RestAPIMeasurments();
+                m_DataProcessor.ExtractData(currMeasures);
+                watchExtractData.Stop();
+                mergeMeasures(measures, currMeasures);
+                elapsedTime += watchExtractData.ElapsedMilliseconds;
+                watchExtractData.Reset();
+            }
+            
+            measures.updateMesurments();
+            string finalMeasures = JsonConvert.SerializeObject(measures.getAverage(), Formatting.Indented);
+
+            string log = header + "\nExtraction of data by REST API took (average of 100 calls): " + (elapsedTime/100) +
+                         " ms\nMeasurements per query (average of 100 calls):\n" + finalMeasures;
             LambdaLogger.Log(log);
             //LambdaLogger.Log("Whole process by REST API including login to SF took: " + (watchExtractData.ElapsedMilliseconds + m_SFLoginTime) +" ms\n");
-            watchExtractData.Reset();
             return log;
         }
-        
+
+        private static void mergeMeasures(RestAPIMeasurments measures, RestAPIMeasurments currMeasures)
+        {
+            measures.getMeasurments[Measures.SA_PROCESSING] += currMeasures.getMeasurments[Measures.SA_PROCESSING];            
+            measures.getMeasurments[Measures.DEPENDENCIES_PROCESSING] += currMeasures.getMeasurments[Measures.DEPENDENCIES_PROCESSING];
+            measures.getMeasurments[Measures.MST_PROCESSING] += currMeasures.getMeasurments[Measures.MST_PROCESSING];
+            measures.getMeasurments[Measures.STM_PROCESSING] += currMeasures.getMeasurments[Measures.STM_PROCESSING];
+            measures.getMeasurments[Measures.PARENT_PROCESSING] += currMeasures.getMeasurments[Measures.PARENT_PROCESSING];
+            measures.getMeasurments[Measures.VISITING_HOURS_PROCESSING] += currMeasures.getMeasurments[Measures.VISITING_HOURS_PROCESSING];
+            measures.getMeasurments[Measures.RESOURCES_PROCESSING] += currMeasures.getMeasurments[Measures.RESOURCES_PROCESSING];
+            measures.getMeasurments[Measures.UNLICENSED_USERS_PROCESSING] += currMeasures.getMeasurments[Measures.UNLICENSED_USERS_PROCESSING];
+            measures.getMeasurments[Measures.CALENDARS_PROCESSING] += currMeasures.getMeasurments[Measures.CALENDARS_PROCESSING];
+
+            measures.getMeasurments[Measures.SA_QUERY] += currMeasures.getMeasurments[Measures.SA_QUERY];
+            measures.getMeasurments[Measures.DEPENDENCIES_QUERY] += currMeasures.getMeasurments[Measures.DEPENDENCIES_QUERY];
+            measures.getMeasurments[Measures.STM_QUERY] += currMeasures.getMeasurments[Measures.STM_QUERY];
+            measures.getMeasurments[Measures.PARENT_QUERY] += currMeasures.getMeasurments[Measures.PARENT_QUERY];
+            measures.getMeasurments[Measures.RESOURCES_QUERY] += currMeasures.getMeasurments[Measures.RESOURCES_QUERY];
+            measures.getMeasurments[Measures.UNLICENSED_USERS_QUERY] += currMeasures.getMeasurments[Measures.UNLICENSED_USERS_QUERY];
+            measures.getMeasurments[Measures.CALENDARS_QUERY] += currMeasures.getMeasurments[Measures.CALENDARS_QUERY];
+
+            measures.getMeasurments[Measures.OBJECTIVES_RULES_PARALLEL] += currMeasures.getMeasurments[Measures.OBJECTIVES_RULES_PARALLEL];
+            measures.getMeasurments[Measures.ADITTIONAL_DATA_PARALLEL] += currMeasures.getMeasurments[Measures.ADITTIONAL_DATA_PARALLEL];
+        }
+
         public static string GetDataByApexRestService(string i_RequestBody)
         {
             string header = "\n~~~~~~~~ APEX REST Service ~~~~~~~~";
@@ -91,24 +130,60 @@ namespace Processor
             request = ParseRequestString(i_RequestBody);
             connectToSF(request);
             
-            Stopwatch watchExtractDataApexRest = new Stopwatch();
-            watchExtractDataApexRest.Start();
-            
-            string responseData = m_FSLClient.RequestABData();
-            DeserializedQueryResult deserializedResponse = JsonConvert.DeserializeObject<DeserializedQueryResult>(responseData);
-            long elapsedTime = deserializedResponse.m_runtime;
-            Dictionary<string, decimal> measurments = deserializedResponse.measures;
-            watchExtractDataApexRest.Stop();
+            long elapsedTime = 0;
+            Dictionary<string, decimal> ongoingMeasurments = new Dictionary<string, decimal>();
+            long totalExtraction = 0;
 
-            string log = "\n\n" + header + "\nExtraction of data by APEX REST:\nExtraction in SFS MP: " + elapsedTime + " ms\n" +
-                         "Total extraction of data by REST API took: " + (watchExtractDataApexRest.ElapsedMilliseconds) +
-                             " ms\nMeasurements per query:\n" +
-                         dictionaryToString(measurments) + "\n\n";
+            for (int i = 0; i < 100; i++)
+            {
+                Stopwatch watchExtractDataApexRest = new Stopwatch();
+                watchExtractDataApexRest.Start();
+                
+                string responseData = m_FSLClient.RequestABData();
+                DeserializedQueryResult deserializedResponse =
+                    JsonConvert.DeserializeObject<DeserializedQueryResult>(responseData);
+                elapsedTime += deserializedResponse.m_runtime;
+                Dictionary<string, decimal> measurments = deserializedResponse.measures;
+                
+                watchExtractDataApexRest.Stop();
+                totalExtraction += watchExtractDataApexRest.ElapsedMilliseconds;
+                watchExtractDataApexRest.Reset();
+                mergeMeasures(ongoingMeasurments, measurments);
+            }
+
+            Dictionary<string, decimal> finalMeasurments = getAverageResults(ongoingMeasurments);
+            string log = "\n\n" + header + "\nExtraction of data by APEX REST (average of 100 calls):\nExtraction in SFS MP: " + elapsedTime/100 + " ms\n" +
+                         "Total extraction of data by REST API took: " + (totalExtraction/100) +
+                         " ms\nMeasurements per query:\n" +
+                         dictionaryToString(finalMeasurments) + "\n\n";
             LambdaLogger.Log(log);
 
-            watchExtractDataApexRest.Reset();
-
             return log;
+        }
+
+        private static Dictionary<string, decimal> getAverageResults(Dictionary<string, decimal> measurments)
+        {
+            Dictionary<string, decimal> finalMeasurments = new Dictionary<string, decimal>();
+            
+            foreach (string key in measurments.Keys)
+            {
+                finalMeasurments[key] = measurments[key] / 100;
+            }
+
+            return finalMeasurments;
+        }
+
+        private static void mergeMeasures(Dictionary<string, decimal> finalMeasurments, Dictionary<string, decimal> currMeasures)
+        {
+            foreach (string key in currMeasures.Keys)
+            {
+                if (!finalMeasurments.ContainsKey(key))
+                {
+                    finalMeasurments[key] = 0;
+                }
+
+                finalMeasurments[key] += currMeasures[key];
+            }
         }
 
         private static string dictionaryToString(Dictionary <string, decimal> dictionary) {  
@@ -163,7 +238,7 @@ namespace Processor
             request = ParseRequestString(i_RequestBody);
             connectToSF(request);
             long elapsedTime = 0;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Stopwatch watch = new Stopwatch();
                 watch.Start();
@@ -176,9 +251,11 @@ namespace Processor
                 watch.Stop();
 
                 elapsedTime += watch.ElapsedMilliseconds;
+                watch.Reset();
             }
 
-            string result = header + (elapsedTime / 10) + "\n";
+            string result = header + "Average of 100 calls: " + (elapsedTime / 100) + " ms\n\n";
+            LambdaLogger.Log(result);
             return result;
         }
     }

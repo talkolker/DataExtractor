@@ -25,7 +25,7 @@ namespace Processor
         private FSLClient m_FSLClient;
         private AppointmentBookingRequest m_Request;
         private AppointmentBookingData m_ABData;
-        private RestAPIMeasurments measurments = new RestAPIMeasurments();
+        private RestAPIMeasurments measurments;
         Stopwatch watch = new Stopwatch();
         
         public DataProcessor(FSLClient i_FSLClient, SFDCScheduleRequest i_Request)
@@ -35,8 +35,9 @@ namespace Processor
             m_ABData = new AppointmentBookingData(m_Request);
         }
         
-        public RestAPIMeasurments ExtractData()
+        public void ExtractData(RestAPIMeasurments i_measurments)
         {
+            measurments = i_measurments;
             getPolicyRulesAndObjectives();
             getService();
             getTimeDependencies();
@@ -49,9 +50,6 @@ namespace Processor
             getCandidates();
             getUnlicensedUsers();
             getAdditionalObjects();
-            measurments.updateMesurments();
-
-            return measurments;
         }
 
         private void getAdditionalObjects()
@@ -74,7 +72,9 @@ namespace Processor
             deselializeQueryResult(additionalObjectsUtils, calendarsStr, AdditionalObjectsUtils.eAdditionalObjectQuery.Calendars);
             
             watch.Stop();
+           
             measurments.addMeasure(Measures.CALENDARS_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
         private void getAdditionalObjectsSync(sObjectUtils additionalObjectsUtils)
         {
@@ -101,7 +101,9 @@ namespace Processor
             await Task.CompletedTask;
 
             watch.Stop();
+            
             measurments.addMeasure(Measures.ADITTIONAL_DATA_PARALLEL, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private Task getCapacities(sObjectUtils additionalObjectsUtils, bool async = false)
@@ -114,8 +116,11 @@ namespace Processor
             deselializeQueryResult(additionalObjectsUtils, capacitiesStr, AdditionalObjectsUtils.eAdditionalObjectQuery.Capacities);
             
             watch.Stop();
+            
             if(!async)
                 measurments.addMeasure(Measures.CAPACITIES_PROCESSING, watch.ElapsedMilliseconds);
+            
+            watch.Reset();
             
             return Task.CompletedTask;
         }
@@ -130,8 +135,11 @@ namespace Processor
             deselializeQueryResult(additionalObjectsUtils, resTerritoriesStr, AdditionalObjectsUtils.eAdditionalObjectQuery.ResourceTerritories);
             
             watch.Stop();
+            
             if(!async)
                 measurments.addMeasure(Measures.ADITTIONAL_DATA_STM_PROCESSING, watch.ElapsedMilliseconds);
+            
+            watch.Reset();
             
             return Task.CompletedTask;
         }
@@ -146,8 +154,11 @@ namespace Processor
             deselializeQueryResult(additionalObjectsUtils, absencesAndShiftsStr, AdditionalObjectsUtils.eAdditionalObjectQuery.ResourcesAdditionalObjects);
             
             watch.Stop();
+           
             if(!async)
                 measurments.addMeasure(Measures.ABSENCES_SHIFTS_PROCESSING, watch.ElapsedMilliseconds);
+            
+            watch.Reset();
             
             return Task.CompletedTask;
         }
@@ -165,8 +176,11 @@ namespace Processor
             //deselializeQueryResult(additionalObjectsUtils, resServicesNextRecordsStr,AdditionalObjectsUtils.eAdditionalObjectQuery.ServicesInResourcesTimeDomain, async);
             
             watch.Stop();
+            
             if(!async)
                 measurments.addMeasure(Measures.SAS_PROCESSING, watch.ElapsedMilliseconds);
+            
+            watch.Reset();
             
             return Task.CompletedTask;
         }
@@ -183,7 +197,9 @@ namespace Processor
             deselializeQueryResult(LicenseUtils, licenseStr);
             
             watch.Stop();
+            
             measurments.addMeasure(Measures.UNLICENSED_USERS_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private void getCandidates()
@@ -197,7 +213,9 @@ namespace Processor
             
             deselializeQueryResult(resourceUtils, resourceStr);
             watch.Stop();
+            
             measurments.addMeasure(Measures.RESOURCES_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private void getVisitingHours()
@@ -211,6 +229,7 @@ namespace Processor
             {
                 watch.Stop();
                 measurments.addMeasure(Measures.VISITING_HOURS_PROCESSING, watch.ElapsedMilliseconds);
+                watch.Reset();
                 return;
             }
 
@@ -219,6 +238,7 @@ namespace Processor
             deselializeQueryResult(visitingHoursUtils, visitingHoursStr);
             watch.Stop();
             measurments.addMeasure(Measures.VISITING_HOURS_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private void getServiceParentInformation()
@@ -234,7 +254,9 @@ namespace Processor
             deselializeQueryResult(parentUtils, parentInfoStr);
 
             watch.Stop();
+            
             measurments.addMeasure(Measures.PARENT_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private void getSTMs()
@@ -253,7 +275,9 @@ namespace Processor
             
             deselializeQueryResult(STMServiceUtils, stmAdditionalMembersQueryStr);
             watch.Stop();
+            
             measurments.addMeasure(Measures.STM_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private void getMSTServices()
@@ -263,7 +287,9 @@ namespace Processor
             if (m_ABData.TimeDependeciesByRootId == null || !m_ABData.TimeDependeciesByRootId.Any())
             {
                 watch.Stop();
+                
                 measurments.addMeasure(Measures.MST_PROCESSING, watch.ElapsedMilliseconds);
+                watch.Reset();
                 return;
             }
 
@@ -274,7 +300,9 @@ namespace Processor
             deselializeQueryResult(MSTServiceUtils, serviceDependencyStr);
             
             watch.Stop();
+            
             measurments.addMeasure(Measures.MST_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private void getTimeDependencies()
@@ -295,7 +323,9 @@ namespace Processor
             if (string.IsNullOrEmpty(rootDependenciesQuery))
             {
                 watch.Stop();
+               
                 measurments.addMeasure(Measures.DEPENDENCIES_PROCESSING, watch.ElapsedMilliseconds);
+                watch.Reset();
                 return;
             }
 
@@ -303,7 +333,9 @@ namespace Processor
 
             deselializeQueryResult(timeDependenciesUtils, rootDependenciesStr);
             watch.Stop();
+            
             measurments.addMeasure(Measures.DEPENDENCIES_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private void getService()
@@ -320,7 +352,9 @@ namespace Processor
             m_ABData.ServiceToSchedule = m_ABData.ServicesById[m_Request.ServiceID];
             
             watch.Stop();
+            
             measurments.addMeasure(Measures.SA_PROCESSING, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
 
         private void getPolicyRulesAndObjectives()
@@ -351,7 +385,9 @@ namespace Processor
             await Task.CompletedTask;
             
             watch.Stop();
+            
             measurments.addMeasure(Measures.OBJECTIVES_RULES_PARALLEL, watch.ElapsedMilliseconds);
+            watch.Reset();
         }
         
         private Task getObjectivesByPolicy(bool async = false)
@@ -365,9 +401,11 @@ namespace Processor
             
             deselializeQueryResult(objectivesUtils, objectivesStr);
             watch.Stop();
-            
+
             if(!async)
                 measurments.addMeasure(Measures.OBJECTIVES_PROCESSING, watch.ElapsedMilliseconds);
+            
+            watch.Reset();
             
             return Task.CompletedTask;
         }
@@ -382,8 +420,11 @@ namespace Processor
             getGapRuleRelatedRules();
             
             watch.Stop();
+
             if(!async)
                 measurments.addMeasure(Measures.RULES_PROCESSING, watch.ElapsedMilliseconds);
+            
+            watch.Reset();
 
             return Task.CompletedTask;
         }

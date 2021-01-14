@@ -44,8 +44,20 @@ namespace Processor
             }
             else
             {
-                measurments[measureType] = measurments[measureType] + watchElapsedMilliseconds;
+                measurments[measureType] += watchElapsedMilliseconds;
             }
+        }
+        
+        public Dictionary<String, long> getAverage()
+        {
+            Dictionary<String, long> measureToReturn = new Dictionary<string, long>();
+            
+            foreach(String measurement in measurments.Keys)
+            {
+                measureToReturn[measurement] = (measurments[measurement] / 100);
+            }
+
+            return measureToReturn;
         }
     }
     

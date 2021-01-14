@@ -30,13 +30,16 @@ namespace DataExtractor
             {
                 //string ping = pingOrg();
 
-                string emptyMeasures = RequestProcessor.SendEmptyRequest(requestXML);
+                //string emptyMeasures = RequestProcessor.SendEmptyRequest(requestXML);
                 
-                string restMeasurements = RequestProcessor.ProcessRequest(requestXML);
+                //string restMeasurements = RequestProcessor.ProcessRequest(requestXML);
 
                 string apexRestMeasurments = RequestProcessor.GetDataByApexRestService(requestXML);
-                
-                return emptyMeasures + restMeasurements + apexRestMeasurments;
+
+                //string results = emptyMeasures;
+                //string results = restMeasurements;
+                string results = apexRestMeasurments;
+                return results;
             }
             catch (Exception ex)
             {

@@ -80,8 +80,11 @@ namespace SalesforceLibrary.REST.FSL
             finally
             {
                 watch.Stop();
+                
                 if(!async)
                     i_Mesurements.addMeasure(i_MeasureType, watch.ElapsedMilliseconds);
+                
+                watch.Reset();
             }
         }
         
