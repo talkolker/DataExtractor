@@ -91,7 +91,7 @@ namespace Processor
             string finalMeasures = JsonConvert.SerializeObject(measures.getAverage(), Formatting.Indented);
 
             string log = header + "\nExtraction of data by REST API took (average of 100 calls): " + (elapsedTime/100) +
-                         " ms\nMeasurements per query (average of 100 calls):\n" + finalMeasures;
+                         " ms\nMeasurements per query (average of 100 calls):\n" + finalMeasures + "\n\n";
             LambdaLogger.Log(log);
             //LambdaLogger.Log("Whole process by REST API including login to SF took: " + (watchExtractData.ElapsedMilliseconds + m_SFLoginTime) +" ms\n");
             return log;
@@ -152,7 +152,7 @@ namespace Processor
             }
 
             Dictionary<string, decimal> finalMeasurments = getAverageResults(ongoingMeasurments);
-            string log = "\n\n" + header + "\nExtraction of data by APEX REST (average of 100 calls):\nExtraction in SFS MP: " + elapsedTime/100 + " ms\n" +
+            string log = "\n\n" + header + "\nExtraction of data by APEX REST (average of 100 calls):\nExtraction in SFS MP: " + (elapsedTime/100) + " ms\n" +
                          "Total extraction of data by REST API took: " + (totalExtraction/100) +
                          " ms\nMeasurements per query:\n" +
                          dictionaryToString(finalMeasurments) + "\n\n";
