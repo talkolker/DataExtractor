@@ -28,18 +28,18 @@ namespace DataExtractor
             string requestXML = "<AppointmentBookingRequest><RefreshToken>5Aep861i3pidIObecHklRnSH1FnIZsznQb_i3Jo9UC6ey5emPA8bFpnVVfFu5kexGfE0sWAb1qtfPkJLVQsT4Sd</RefreshToken><IsEmergency>false</IsEmergency><ServiceID>08pe0000000CbHtAAK</ServiceID><IsTest>true</IsTest><IsManaged>false</IsManaged><SchedulingPolicyID>a0Qe000000AzjJNEAZ</SchedulingPolicyID><InstanceName>CS15</InstanceName><OrganizationId>00De0000005T9GFEA0</OrganizationId><OrganizationType>Enterprise Edition</OrganizationType><TravelUnit>km</TravelUnit><SearchSlotsMaxDays>14</SearchSlotsMaxDays><ApprovedAbsences>true</ApprovedAbsences></AppointmentBookingRequest>";
             try
             {
-                string ping = pingOrg();
+                //string ping = pingOrg();
 
-                string emptyMeasures = RequestProcessor.SendEmptyRequest(requestXML);
+                //string emptyMeasures = RequestProcessor.SendEmptyRequest(requestXML);
                 
-                //string restMeasurements = RequestProcessor.ProcessRequest(requestXML);
+                string restMeasurements = RequestProcessor.ProcessRequest(requestXML);
 
                 //string apexRestMeasurments = RequestProcessor.GetDataByApexRestService(requestXML);
 
-                string results = emptyMeasures;
-                //string results = restMeasurements;
+                //string results = emptyMeasures;
+                string results = restMeasurements;
                 //string results = apexRestMeasurments;
-                return results + ping;
+                return results;
             }
             catch (Exception ex)
             {
